@@ -28,7 +28,7 @@ This project follows the AWS blog post on [Generating and Evaluating Images in A
 - Use the API Gateway endpoint to send a POST request with a text prompt.
 - Select Test section to send api request.
 - Now, go to body sub-section and write the prompt request.
-- The API returns an image URL and evaluation details.
+- The API returns an image URL (pre-signed URL) and evaluation details.
 ## Example Request in 'Test' section of API Gateway endpoint 'POST' request
 ```json
 {
