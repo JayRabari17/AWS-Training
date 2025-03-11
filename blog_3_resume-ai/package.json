@@ -1,0 +1,25 @@
+{
+  "name": "blog_3_resume-ai",
+  "version": "0.1.0",
+  "bin": {
+    "blog_3_resume-ai": "bin/blog_3_resume-ai.js"
+  },
+  "scripts": {
+    "build": "echo \"The build step is not required when using JavaScript!\" && exit 0",
+    "cdk": "cdk",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "aws-cdk": "2.1003.0",
+    "jest": "^29.7.0"
+  },
+  "dependencies": {
+    "@cdklabs/generative-ai-cdk-constructs": "^0.1.296",
+    "aws-cdk-lib": "2.181.1",
+    "body-parser": "^1.20.3",
+    "constructs": "^10.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "node-fetch": "^2.7.0"
+  }
+}

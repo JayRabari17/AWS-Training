@@ -11,12 +11,15 @@ bedrock_client = boto3.client(
 model_id = "amazon.nova-micro-v1:0"
 
 # Prepare the input prompt
-prompt = "Hello, how are you?"
+prompt = "Tell me a joke"
 
 # Create the request payload
 body = { 
     "inferenceConfig": {
-      "max_new_tokens": 2048
+      "max_new_tokens": 2048,
+      "temperature": 0.9,
+      "top_k": 250,
+      "top_p": 1,
     },
     "messages": [
       {

@@ -2,15 +2,6 @@
 
 This project follows the AWS blog post on [Generating and Evaluating Images in Amazon Bedrock](https://aws.amazon.com/blogs/machine-learning/generate-and-evaluate-images-in-amazon-bedrock-with-amazon-titan-image-generator-g1-v2-and-anthropic-claude-3-5-sonnet/). It sets up an API to generate images using Amazon Titan Image Generator G1-V2 and evaluates them using Anthropic Claude 3.5 Sonnet.
 
-## Features
-- Generates images from text prompts using Amazon Titan Image Generator G1-V2.
-- Evaluates generated images using Anthropic Claude 3.5 Sonnet.
-- Stores images in an Amazon S3 bucket.
-- Uses AWS Lambda and API Gateway for serverless processing.
-- Secures API access with AWS Secrets Manager and a Lambda authorizer.
-- CloudFormation template for easy deployment.
-- Fixed CloudFormation errors related to API Gateway authorization and Lambda permissions.
-
 ## Requirements
 - AWS account with access to Amazon Bedrock models.
 - IAM user with the required permissions.
