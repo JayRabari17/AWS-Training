@@ -8,10 +8,10 @@ bedrock_client = boto3.client(
 )
 
 # Define the model ID
-model_id = "amazon.nova-micro-v1:0"
+model_id = "amazon.nova-lite-v1:0"
 
 # Prepare the input prompt
-prompt = "Tell me a joke"
+prompt = "Tell me a joke!"
 
 # Create the request payload
 body = { 
