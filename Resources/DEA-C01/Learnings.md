@@ -693,3 +693,202 @@ Task 3:
     - You can also use Data API with other AWS services and not just SDK, services are Step functions, Eventbridge, EC2, Lambda, API Gateway, Sagemaker, Batch.
     - Some More points are:
     ![alt text](image-46.png)
+
+## Migration and Transfer
+
+### Application Discovery Service & Application Migration Service
+
+- Applicaton Discovery Service: Plan migration projects by gathering information about on-premises data centers. - Server utilization data and dependency mapping are imp. for migrations. - It will help you to understand what you need to move and how they are interconnected.
+    - There are 2 types for discovery:
+    ![alt text](image-47.png)
+
+- Application Migration Service (MGN): - It helps with the actual migration of application to AWS. - Used to be called 'CloudEndure Migration'. - It does so by replicating current data and then after you can shut down already hosted server. 
+![alt text](image-48.png)
+
+### Database Migration Service (DMS)
+
+- Quickly and securely migrate dbs to aws. It is resilient and self-healing. - Source db can remain available while this happens. - It supports Homogeneous and Heterogeneous replications. - It also provides continuous data replication using CDC. - To use DMS, you must create EC2 instance to perform the replication tasks.
+    - Sources & Targets:
+    ![alt text](image-49.png)
+
+- DMS Schema Conversion Tool: To convert your db schema from one engine to another.
+
+- DMS Continuous Replication:
+![Example](image-50.png)
+
+- DMS Multi-AZ Deployment:
+![alt text](image-51.png)
+
+### AWS Datasync
+
+- Move large amount of data Securely (uses SSL/TLS) to and from On-premises/other cloud to AWS (needs agent), from AWS to AWS (no agent needed). - It can sync to S3 (any storage class), EFS, FSx (windows, Lustre, NetApp, OpenZFS). - Replication task can be scheduled hourly, daily or weekly. - File permissions and metadata are preserved (NFS POSIX) 
+- One agent task can use 10 Gbps, you can bandwidth limit
+- Architecture of on-premise to AWS: If you dont have enough bandwidth, then you can use snowcone (as it comes with datasync on it).
+![alt text](image-52.png)
+- AWS to AWS services (metadata is also copied):
+![alt text](image-53.png)
+
+### AWS Snow Family
+
+- If it takes more than 1 week to transfer data, use Snow devices.
+![alt text](image-55.png)
+
+- AWS Snowball:
+![alt text](image-54.png)
+
+    - We can also do Edge Computing with Snowball.
+    ![alt text](image-56.png)
+
+### AWS Transfer Family
+
+- A fully managed service for file transfers into and out of Amazon S3 ot Amazon EFS using FTP protocol. It supports: AWS Transfer for FTP, " FTPS (FTP over SSL), " for SFTP (Secure FTP).
+![alt text](image-57.png)
+
+## Compute
+
+### EC2
+
+[Amazon EC2 offers a variety of instance types, each optimized for different workloads. Here's an extensive list of EC2 instance families and their typical use cases:
+
+General Purpose Instances
+T-Series (T2, T3, T3a, T4g): Burstable performance instances, ideal for web servers, small databases, and development environments.
+
+M-Series (M5, M6a, M6g, M6i, M7a, M7g, M7i, etc.): Balanced compute, memory, and networking, suitable for enterprise applications, gaming servers, and caching.
+
+Compute Optimized Instances
+C-Series (C5, C6a, C6g, C6i, C7a, C7g, etc.): High-performance processors for compute-intensive applications like gaming, scientific modeling, and machine learning inference.
+
+Memory Optimized Instances
+R-Series (R5, R6a, R6g, R6i, R7a, etc.): Optimized for memory-intensive applications such as high-performance databases and big data analytics.
+
+X-Series (X1, X1e, X2gd, X2idn, etc.): Designed for large-scale in-memory databases like SAP HANA.
+
+U-Series (U-3tb1, U-6tb1, U-9tb1, etc.): Ultra-high memory instances for enterprise-grade applications.
+
+Storage Optimized Instances
+I-Series (I3, I3en, I4g, I4i, I7i, etc.): High-speed storage for transactional workloads like NoSQL databases.
+
+D-Series (D2, D3, D3en): Optimized for dense storage applications such as Hadoop and data warehousing.
+
+H-Series (H1): Designed for high disk throughput applications.
+
+Accelerated Computing Instances
+P-Series (P3, P4d, P5, etc.): GPU-powered instances for deep learning and AI workloads.
+
+G-Series (G4ad, G4dn, G5, etc.): Optimized for graphics-intensive applications like video rendering and gaming.
+
+F-Series (F1, F2): FPGA-based instances for hardware acceleration.
+
+Inf-Series (Inf1, Inf2): Designed for machine learning inference workloads.
+
+Trn-Series (Trn1, Trn2): Optimized for training deep learning models.
+
+High-Performance Computing (HPC) Instances
+Hpc-Series (Hpc6a, Hpc6id, Hpc7a, Hpc7g): Designed for large-scale scientific simulations and engineering workloads.]
+
+- EC2 in Big data:
+    
+    - Types of instances:
+        1. On demand: Don't know much but cant afford to lose data
+        2. Spot: As they can be taken away by AWS anytime, you need to maintain checkpointing feature if you want to use it in big data.    
+        3. Reserved: Long running clusters, dbs for over a year or so. (if reserved priorly then you can get huge discounts)
+    
+- Auto Scaling: You can leverage it for EMR (as EMR (Master, Compute (contain data) and Task (dont contain data) nodes) clusters use EC2). 
+    - It is automated for D-DB, Auto-scaling grps, etc.
+
+- EC2 Graviton Instance: Amazon's own family of processors which powers several EC2 instance types for Gen. purpose, Comp. optimized, Mem. optim., Stor. optimi., Acce. comput.
+![alt text](image-58.png)
+
+### Lambda
+
+- A way to run code snippets in cloud. - It is serverless, continuosly scaling. - Why to use it? - Because running servers can get expensive when scaling, and there are times when you wont have any work on server. With lambda, you only pay for the processing time you have used.
+    - Main uses of Lambda: - Real time file processing, Real time stream processing, ETL, Cron replacement, Process AWS events.
+
+- Supported Languages: Python, Java, Node.js, etc.
+
+- Services (somewhat partial) that can trigger Lambda are:
+    ![alt text](image-59.png)
+    - For Kinesis, Lambda continuously polls from stream and stream doesn't directly push new data
+
+Lambda with Opensearch for logs from S3 (**Opensearch is search engine and also analytics engine, You can search, query, visualize data**)
+
+- Lambda with redshift can be used to automatically copy new data from S3 to redshift, just like COPY cmd. But as Lambda is a **Stateless Service, it can't keep track of where you left off by itself**. To solve it, you can use D-DB to store where it left
+
+- Lambda + Kinesis:
+![alt text](image-60.png)
+
+- Lambda - File System Mouting: Lambda functions can access EFS file systems if they are running in vpc.
+![alt text](image-61.png)
+- Lambda Storage options:
+![alt text](image-62.png)
+
+### AWS SAM (Serverless App. Model)
+
+- Framework for developing and deploying serverless applications. - All the config. is YAML code, it generates complex CloudFormation from SAMYAML file. Supports anything from C-F. - SAM use CodeDeploy to deploy Lambda functions. - SAM can help you to run Lambda, API Gateway, DynamoDB locally.
+
+- AWS SAM - Recipe (You must include Transform header which indicates its SAM template)
+![alt text](image-63.png)
+    - Flow:
+![alt text](image-64.png)
+    - SAM sync: It is set of features to reduce latency while deploying resources to AWS. - Sync your project (SAM template) to AWS. Sync. code changes to AWS without updating infra. (uses Service API and bypass C-F)
+![alt text](image-65.png)
+
+### AWS Batch
+
+- Allows to run batch jobs based on docker images. - Dynamic provisioning of instances (EC2 & Spot instances). - Fully serverless, pay for the underlying EC2 instances. - You can schedule batch jobs using CloudWatch events or orchestrate batch jobs using AWS Step function.
+
+- Batch V/S Glue:
+![alt text](image-66.png)
+
+
+## Containers
+
+- Docker is a software dev. plat. to deploy apps. - Apps are packaged in containers that can be run on any OS. - Apps run the same everywhere, works with any lang, tech, OS. - Docker images are stored in Docker Repositories on either Docker Hub (public repo.) or **Amazon ECR (private repo.) [There also exists a public repo in ECR called ECR Public Gallery]**
+    - Use cases: Microservice architecture, etc.
+
+- Docker v/s VMs
+![alt text](image-67.png)
+
+- Getting Started with Docker: You would need Dockerfile to initliaze project and installing necessary dependencies on container.
+![alt text](image-68.png)
+
+- Docker Container Management on AWS
+    - Amazon ECS: Amazon's own container platform
+    - Amazon EKS: Amazon managed Kubernetes(which is open-source)
+    - Amazon Fargate: Amazon's own 'serverless' container platform. - Works with ECS and EKS.
+    - Amazon ECR: Store container images.
+
+### Amazon ECS:
+
+- ECS - EC2 Launch Type: Here you have to manage underlying EC2 instance for ECS cluster by yourself. - Each cluster must run ECS agent to register instance in ECS cluster. - AWS takes care of starting and stopping containers.
+![alt text](image-69.png)
+
+- ECS - Fargate Launch Type: You don't provision infrastructure/instances, all serverless. - You just create task definitions. Then AWS runs those ECS tasks based on CPU/RAM necessary. - To scale, just increase number of ECS tasks (no more EC2 instances) [Task ig are individual containers running which can respond to call.]
+
+- Amazon ECS - IAM Roles for ECS
+    - EC2 Instance Profile (valid only if you are using EC2 Launch Type):
+    ![alt text](image-70.png)
+
+- Amazon ECS - Load Balancer Integrations: ALB is supported and works for most use cases. But sometimes, you might need N/W Load balancer.
+
+- Amazon ECS - Data Volumes [Persistant data - EFS & also you can't mount S3 as file system for ECS tasks.]
+![alt text](image-71.png)
+
+- Amazon ECR: Store and manage Docker Images on AWS. - Fully integrated with ECS, backed by Amazon S3.
+![alt text](image-72.png)
+
+### Amazon EKS:
+
+- Kubernetes is an open-source system for automatic deployment, scaling and management of containerized (usually Docker) app. It supports deploy. through 2 modes: 1. EC2 instances or 2. Fargate. - Kubernetes is cloud-agnostic
+
+![alt text](image-73.png)
+
+    - Node types: 
+        - Managed Node groups: Creates and manages nodes (EC2 instances) for you. Nodes are part of Auto scaling group managed by EKS. - Supports on-demand or spot instances.
+        
+        - Self Managed Nodes: Nodes created by you and handled by EKS. - Supports on-demand or spot instances.
+
+        - AWS Fargate
+        
+- EKS Volumes:
+![alt text](image-74.png)
