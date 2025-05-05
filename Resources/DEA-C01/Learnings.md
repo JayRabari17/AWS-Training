@@ -892,3 +892,128 @@ Lambda with Opensearch for logs from S3 (**Opensearch is search engine and also 
         
 - EKS Volumes:
 ![alt text](image-74.png)
+
+
+## Analytics
+
+### Glue
+
+- Service used to create table definitions and performing ETL (ETL jobs uses Apache Spark under the hood). - Serverless discovery and definition of table definitions and schema. - Main use is to serve as central metadata repository for data lake. - It will discover those schemas out of your unstructured data sitting in S3 and publish table def. for use in analysis tools.
+
+- Custom ETL jobs can be trigger/event-driven, on-schedule, on-demand 
+
+- **GLUE Crawler/ Data Catalog**: It scans S3 repositories and creates schema. - Can run periodically. - Populates Glue Data Catalog with table defintions. Once data is cataloged, then it can be queried like structured data using Athena, Spectrum, EMR or QuickSight.
+![alt text](image-75.png)
+    - **Glue Crawler and S3 Partitions**: G-C will extract partitions based on how the S3 data is organised. So, partition your data in S3 accordingly like if you need data per year or must you need according to devices?
+    ![alt text](image-76.png) 
+
+- **Glue + Hive**: Hive lets you run SQL-like (bcz it uses HiveQL) queries from EMR. - Glue Data Catalog can serve as 'Hive metastore' or you can also import Hive metastore into Glue.
+
+- **GLUE ETL**: - Auto. code gen. - Scala or Python. - Encryption: Server-side (at rest) or SSL (in-transit). - Can be event-driven. - Can provision add. DPUs to increase perf. of underlying jobs. - Enabling job metrics can help you understand max. capacity in DPUs you need. - You can also plot max. needed executors (1 DPU = 2 executors) vs max. allocated executors in Glue console as well as data movement. - Errors can be reported to cloudwatch (could also integrate with SNS for notif.).
+    - If generated code isn't proper, you can modify it as well. - You can also provide your own code (Spark(Scala) or PySpark(Py) scripts).
+    - Target can be S3, JDBC(RDS/Redshift) or Glue D-C.
+    - Glue Scheduler used to schedule the jobs. OR you can use Glue Triggers to automate job runs based on events.
+
+- **GLUE ETL: The DynamicFrame** (Main struct. that we might be interating with): A DynamicFrame is a collection of DynamicRecords. - DynamicRecords are self-describing, have a schema. - Very much like a Spark DF but with more ETL stuff. - Scala and Python APIs
+![alt text](image-77.png)
+    - **AWS GLUE ETL: Resolve Choice**: Deals with ambiguities in DF and returns a new one. For eg. if two fields have same name. Four ways:
+        
+        1. make_cols: creates a new column for each type. (i.e price - price_string and price_double)
+        2. cast: casts all values to a specified type.
+        3. make_struct: creates a structure that contains each d-type.
+        4. project: projects every type to a given type
+
+- **GLUE ETL - Transformations**: There are many tranformations that you can use on your data. They are:  
+    1.  Bundled Transformations: - DropFields, DropNullFields: Remove (null) fields. - Filter: Specify a function to filter records. - Join: To enrich data. - Map: add fields, delete fields, perform external lookups.
+    2. Machine Learning Transformations: - **Findmatches ML**: Identify duplicate or matching records in your dataset even when the records do not have common unique identifier and no fields match exactly.
+    3. Format conversions: CSV, JSON, Avro, Parquet, ORC, XML
+    4. Apache Spark Transformation (All of the trans. that are part of Apache Spark even like K-means.) 
+
+- **Glue ETL - Modifying Glue D-C**: Glue ETL script can update your schema and also partitions if necessary.
+    1. Adding new partitions: Either re-rerun G-C or have the script use enableUpdateCatalog and partitionKeys options.
+    2. Updating table schema: Either re-run G-C or use enableUpdateCatalog/updateBehavior from script.
+    3. Creating new table: enableUpdateCatalog/updateBehavior with setCatalogInfo
+
+    Restrictions: - S3 Only. - JSON, CSV, parquet only. - Parquet req. special code though. - Nested schema are not supported.
+
+- **Running Glue jobs**: Time-based schedule (cron-style). 
+    - Job bookmarks (persist state from job run, - prevents reprocessing of old data, - allows you to  process new data only when re-running on schedule, - works with s3 sources, - works with rel. db. via JDBC. [only handles new rows and not updated rows]).  
+    - After completion of jobs And using Cloudwatch, you can fire off a lambda or sns notif. when ETL succeeds or fails OR invoke EC2, send event to kinesis, activate Step Function 
+
+- **Glue cost model**: 
+![alt text](image-78.png)
+Notebook on development endpoint.
+
+- **Glue Anti-patterns**: 
+![alt text](image-79.png)
+using multiple engines like hive, pig, etc. - EMR would be better for it
+
+- Streaming data can be captured from kinesis or kafka and Glue supports serverless streaming ETL with cleaning and tranforming data in-flight running on Apache spark structured streaming.
+
+- **Glue Studio**: Visual interface (no-code, although you can have some custom tranformations by writing your own code) for ETL Workflows. - Visual Job editor (- create DAG's for complex workflow), -sources include S3, Kinesis, Kafka, JDBC. - Tranform/sample/Join data. - Target to S3, or Glue D-C. - Visual Job Dashboard (Overviews, status and run times)
+
+- **Glue Data Quality**: It is a feature that you can use inside your job to evaluate the quality of data coming in and if it violates certain parameters or rules defined by you, you can automatically fail the job or log it into cloudwatch. - It uses Data Quality Definition Language (DQDL).
+![alt text](image-80.png)
+
+- **Glue DataBrew** [Just for doing T in ETL]: Visual data processing tool, 'UI for pre-processing large datasets.' - i/p from S3, data warehouse, or database. - o/p to S3. - over 250 ready-made transformations (drag & drop). - You can create "recipies" of tranformations that can be saved as jobs within a larger project. - You can also define data quality rules in here. - may also create datasets with custom sql with redshift snowflake.
+    - Security:
+![alt text](image-81.png)
+    - Handling PII in Databrew Transformation: 1. Substitution (Replace with random) (REPLACE_WITH_RANDOM), 2. Shuffling(SHUFFLE_ROWS), 3. Deterministic Encryption (same value results in same encrypted)(ENCRYPT), 4. Probab. Encryption, 5. Decryption, 6. Nulling out or deletion (DELETE), 7. Masking out (MASK_CUSTOM, _DATE, _DELIMITER, _RANGE), 8. Hashing (Crypto. Hash)
+
+- **Glue Workflows**: Design multi-job, multi-crawler ETL processes run together. When choosing between step-func, glue workflow (Designed mostly for and within Glue part of AWS) and mwaa. You can create these workflows from aws blueprint or console (graphically) or api.
+![alt text](image-82.png)
+    - Triggers within workflow can start jobs or crawlers. - It can be on-scheduled basis based on cron expression. - Triggers can be fired/started also on demand and also through eventbridge events.
+    ![alt text](image-83.png)
+
+### Lake Formation
+
+- Made on top of Glue. - Makes it easy to set up a secure data lake in days. - It manages loading data from external sources and monitoring data flows. - Setting up partitions. - Helps in managing encryption, keys. - Define tranform. jobs and monitoring them. - Access control. - Auditing. -  Anything that can be done with glue, can be done with lake formation
+![alt text](image-84.png)
+    EMR can also query lake formation now
+
+- Pricing: Lake formation doesn't cost anything but underlying services like s3, emr, glue, athena and redshift incur charges
+
+- Process of creating data lake:
+![alt text](image-85.png)
+
+- **Lake Formation Finer points (for exam)**:![alt text](image-86.png)
+- **L-F - Governed Tables and Security (ACID compliance with even data lake)** (Concurrently do row-level access/updates/deletes without worrying with mix-up between mult. users): Governed Tables support ACID Transactions across multiple tables. - New type of S3 table, - works with streaming data too (Kinesis), - can query with Athena.- You can have granular access control with row-level and cell-level security in both governed and s3 tables. - incur additional charges.
+    - with new features, you need to manage and perform storage optimization with automatic compaction feature
+    - Data Filters (Column, Row and Cell level) in L-F: ![alt text](image-87.png)
+
+### Amazon Athena
+
+- Serverless interactive queries (SQL) of S3 data. - No need to load data, stays in S3. - Uses Presto under the hood. - Serverless - Supports many data formats like CSV, TSV, JSON, ORC, Parquet, Avro and also Snappy, Zlib, LZO, Gzip compression formats. - Structured, Unstrutured, Semi-structured.
+    - Examples: ![alt text](image-88.png)
+
+- **Athena Workgroups** (For isolation and managing access to people):  Can organize users/teams/apps/workloads into workgroups and can control and track costs by workgroup. - Integrates with IAM, CloudWatch, SNS. - Each workgroup can have: Query history, Data limits (limit to how much queries may scan by workgroup), IAM policies, Encryption settings.
+
+- Athena Cost Model: Pay as you go, $5 per TB scanned, successfull or canceled queries count and failed doesn't. - No charge for DDL. - Columnar formats and also partitioning save a lot of money and give better perf. - Glue and S3 charges are excluded.
+![alt text](image-89.png)
+
+- Athena Anti-patterns: 1. Highly Formatted reports (Use Quicksight). 2. ETL
+
+- Athena: Optimizing Perf. 
+![alt text](image-90.png) You can use MSCK REPAIR TABLE to update current metadata table with new partition added anytime.
+
+- Athena ACID Transaction support: - powered by 'apache iceberg'. To use it, just add "table_type = ICEBERG in create tabl"e command. - This allows concurrent users to safely make row-level modifications. - Compatible with EMR, Spark, anything that supports Iceberg table format. - Gives you time travel operations/queries (near past time) (recover data with select statement which are recently deleted) - Similar to governed table in L-F
+![alt text](image-91.png)
+
+- ***Apache Iceberg***: It is a table format for large scale data lakes (petabyte-scale) originally created from Netflix. - Offers ACID-compliance. - Schema evolution safely as data evolves. - Can also support partitioning. - Time travel queries. - Offers efficient metadata management and works with spark, flink, presto, trino, hive and NOW with Glue, Athena and EMR
+![alt text](image-92.png)
+- Iceberg + AWS Glue (Glue D-C)/S3 + Athena (in fig, instead of spark, you can think of athena)
+![alt text](image-93.png)
+    To use Glue D-C with iceberg you must make it compatible.
+    ![alt text](image-94.png)
+
+- Athena Finegrained access to aws glue d-c: - IAM based DB and table-level security (Broader than data filters in L-F) -> You can have policies that grants certain operations to the glue dbs. and also need a role for athena to use glue and your db. - You can have policies to block certain opn like show all table and stuff.
+
+### Apache Spark
+
+- It is distributed processing framework for big data. It performs opn. in-memory. Supports Java, Scala, Python, R. - Spark is not meant for OLTP. - Features like Real-time analytics, Batch processing, ML, Spark streaming (integrated with kinesis, kafka, on EMR), Graph processing
+
+- Working of Spark:
+![alt text](image-95.png)
+
+- Spark Components:
+![alt text](image-96.png)
