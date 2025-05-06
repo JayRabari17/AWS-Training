@@ -1008,6 +1008,14 @@ using multiple engines like hive, pig, etc. - EMR would be better for it
 
 - Athena Finegrained access to aws glue d-c: - IAM based DB and table-level security (Broader than data filters in L-F) -> You can have policies that grants certain operations to the glue dbs. and also need a role for athena to use glue and your db. - You can have policies to block certain opn like show all table and stuff.
 
+- Athena CTAS (Create Table as Select): Creates a new table from result of queries. - Also can be used to create a new table that's subset of another. - Can also be used to convert data to a diff. format.
+
+- Athena for Spark (kinda like On top of): ![alt text](image-98.png)
+
+- **Athena Federated Queries**: 
+![alt text](image-99.png)
+![alt text](image-101.png)
+
 ### Apache Spark
 
 - It is distributed processing framework for big data. It performs opn. in-memory. Supports Java, Scala, Python, R. - Spark is not meant for OLTP. - Features like Real-time analytics, Batch processing, ML, Spark streaming (integrated with kinesis, kafka, on EMR), Graph processing
@@ -1017,3 +1025,200 @@ using multiple engines like hive, pig, etc. - EMR would be better for it
 
 - Spark Components:
 ![alt text](image-96.png)
+
+- Spark Structured Streaming:
+    - As spark works on datasets (consider them as database only), they can be created as continuosly growing datasets from streaming data by appending it to dataset as it comes.
+    - You can use spark streaming with kinesis (K Client Lib.)
+
+    - Spark + Redshift: ![alt text](image-97.png)
+
+### Amazon EMR
+
+- It is a managed Hadoop framework on EC2 instances. - Includes Spark, Hbase, Presto, Flink, Hive and more. - EMR notebooks can be used to run your scripts on your clusters. - Several integration points
+
+- Cluster in EMR:
+![alt text](image-100.png)
+
+- Transient(Termminate when all steps are completed, i.e Loading, processing, storing data then shut down) vs Long-running clusters (must be manually terminated) ![alt text](image-102.png)
+
+- EMR Usage: - Frameworks and app. are specified at cluter launch. - If you have long running cluster, then you can just connect to it. - OR submit ordered steps via console like processing s3/hdfs data and o/p to somewhere
+
+- EMR/AWS Integration:
+![alt text](image-103.png)
+
+- Storage on EMR: 1. HDFS, 2. EMRFS (EMR File system) (Access S3 as if it was HDFS), 3. Local file system, 4. EBS for HDFS (deletes when cluster is terminated)
+![alt text](image-105.png)
+![alt text](image-104.png)
+
+- EMR Pricing is per hour + EC2 charges. If you need to add temp. computing capab., you can add TaskNodes and you can also add/remove core nodes(bu rem. core needs may have data loss risk)
+
+- EMR Managed Scaling (Prior was " automated ")![alt text](image-106.png)
+
+- Hadoop: Framework for distrib. processing. 
+![alt text](image-107.png)
+
+- **EMR Serverless** (EMR on EKS): To start we just choose our release and runtime (Spark, Hive, Presto)
+![alt text](image-108.png)
+![alt text](image-109.png)
+    - EMR Serverless Application Lifecycle: ![alt text](image-110.png)
+- **Spark takes 10% more overhead capacity, so make sure that your initial capac. is 10% more than its needed**
+- EMR Serveless Security
+![alt text](image-111.png)
+
+- **EMR on EKS**: ![alt text](image-112.png)
+
+### Amazon Kinesis Data Streams
+
+- Made of multiple shards. - You need to provision shards ahead of time. - data gets div. into shards. - Shard defines stream capacity in terms of ingestion and consumption rates. - It takes data from producers and give it to consumers of data.
+![alt text](image-113.png)
+    - You have retention period between 1 to 365 days. - Ability to repocess/replay data. - Once data is inserted into Kinesis, it is immutable. - Data shares the same partition goes to the same shard.
+    - Capacity modes:
+        1. Provisioned mode: Choose the number of shards provisioned, can scale manually or through API. Each shard gets 1 MB/s or 1000 records per second for i/p and for o/p each shard gets 2 MB/s (applicable to classic or enhanced fan-out consumer). - Pay for shard provisioned per hour.
+        2. On-demand mode: No need to manage/provision capacity. - Default capacity is provisioned (4 MB/s or 4000 records per second) and then scales auto. based on observed throughput peak during last 30 days. - Pay per stream per hour and data in/out per GB.
+    
+    - Security: ![alt text](image-114.png)
+
+- **Kinesis Producers**: 
+![alt text](image-115.png)
+Kinesis Agent is a linux program that is used to send logs from instance to kinesis data stream
+
+    - SDK:
+        - PutRecord(s) API
+        - Exception during API calls: 1. ProvisionedThroughputExceeded Exception - Happens when sending more data (> MB/s or rec./s). - Make sure you dont have a hot shard (shard containing key getting accessed too much than others.) -> Soln.: Retries with backoff, increase shards, ensure partit. key is good one (more distrib.)
+
+    - Producer Library: Easy to use and highly configurable C++/Java lib. - used for building high perf., long-running producers. - Auto. retry mechanisms. - has 2 types of apis: Synchronous and Asynchronous. - submits metrics to cloudwatch. - supports 'batching' (helps in increase throughput by going over the defined size and decrease cost). - configuration must be imple. by user, if needed. - KPL records are only 'decoded' with KCL or special helper library.
+        - Batching in KPL:
+        ![alt text](image-116.png)
+
+        - When not to use KPL: 1. When we have an app that can't tolerate delays then we need to use AWS SDK directly.
+        ![alt text](image-117.png)
+
+    - Kinesis Agent: Monitor log files and sends them to Kinesis Data Streams. - Java based agent built on top of KPL. - needs to be installed 
+    ![alt text](image-118.png)
+
+- **Kinesis Consumers**: 
+
+    - SDK:
+       - **Classic**:
+        ![alt text](image-119.png)
+
+            GetRecords API: Records are polled by consumers from shard. Each shard has 2 MB total aggregate throughput. - This API can give data upto 10 MB/s (but then would have cooldown or throttle for 5 seconds) or 10,000 rec./s. You can have 5 GetRecords API per shard per second = 200 ms latency, i.e if 5 app. consume from shard, then each app. can have upto 400 KB/s received data. This can be solved by Enhanced-fanout
+
+        - Client Library (KCL): Java-first lib. but exists for other languages too (Go, Python, .NET, etc.). - Read records from kinesis produced with KPL. - Share multiple shards with multiple consumers in one group, shard discovery. - Checkpointing feature to resume progess by leveraging D-DB for co-ord. and checkpointing. - Record processors will process the data. 
+            - If you get ExpiredIteratorException then you should increase WCU in D-DB.
+        ![alt text](image-120.png)
+        
+        - Kinesis Connector Library (can be replaced by Firehose or Lambda and is somewhat deprecated): Older Java Lib. and leverages KCL library. - Write data to: Amazon S3, D-DB, Redshift, Opensearch.
+
+        - Lambda sourcing from Kinesis: It can source records from K-D-S. Lambda consumer has a library to de-aggregate record from KPL. - can be used to do light-weight ETL to S3, D-DB, Redshift, Opensearch, anywhere. - It can be used to send notif./email in real time. - Lambda has configurable batch size.
+
+        - **Enhanced Fan Out**: Works with KCL 2.0 and AWS Lambda from and After Nov. 2018. Here instead of all consumers having aggregate of 2 MB/s per shard, each consumer can have 2 MB/s provisioned throughput per shard means that 2 MB/s per shard per consumer because it pushes data to consumer over HTTP/2. Reduce latency to ~70 ms
+
+        - **Standard/Classic Consumers v/s Enhanced Fan out**: ![alt text](image-121.png)
+    
+- **Scaling K-D-S**: 
+
+    - Operations: 
+        1. Adding Shards: It is also called 'Shard splitting'. - Can be used to increase Stream Capacity (1 MB/s out data per shard). - can be used to divide 'hot shard'. - Once old shard is closed and deleted once the data expires.
+        ![alt text](image-122.png)
+        2. Merging Shards: It is used to decrease Stream capacity and save costs. - can be used to group 2 shards with low traffic. - Old shards are closed and deleted based on data expiration
+
+    - **Out of order records** even though user gave data according to parti. key are fetched due to resharding. To prevent it, after a reshard, read your parent shard completely. This logic must be written by you if not using KCL.
+    ![alt text](image-123.png) 
+
+    - **Auto scaling** is not a native feature of Kinesis. - you need to make an api call to change number of shards with UpdateShardCount
+
+    - Limitations: 1. Resharding must be planned in advance bcz it can't be done parallely. 2. And you can perform one resharding opn. at a time and it takes few seconds. For eg., 1000 shards' splitting to 2000 might take 8.3 hours. 
+    ![alt text](image-124.png)
+
+    - Handling duplicates for producers in K-D-S: Producer retries can create duplicates due to network timeouts. ![alt text](image-125.png)
+    - Handling duplicates for consumers in K-D-S: Consumer retries can make your app read same data twice. ![alt text](image-126.png)
+
+- Security:
+![alt text](image-127.png)
+
+### Amazon Data Firehose (previously known Kinesis Data Firehose) [Near real time service]
+
+- It is used to store data into target destinations. - It is fully managed with no adminis. req.. - It is  near real time (buffer based on time and size, optionally can be disabled) - Load data into redshift/s3/opensearch/splunk. - Auto. scaling, - supports many data formats. - data conversion from JSON to parquet/orc (only for S3). - Data transformation through AWS lambda. - Supports compression only when target is S3. - Pay for the amount of data passed through. - Spark and KCL can't read from KDF.
+![alt text](image-128.png)
+
+- Data firehose delivery diagram:
+![alt text](image-129.png)
+
+- Firehose buffer accumulates records and is flushed based on time and size rules. Firehose will auto. increase buffer size to increase throughput.
+
+- **Data Streams v/s Firehose**: ![alt text](image-130.png)
+
+- Troubleshooting problems:
+    - Performace: ![alt text](image-131.png)
+    - Producer side: ![alt text](image-132.png)
+    - Consumer: ![alt text](image-133.png) ![alt text](image-134.png) ![alt text](image-135.png)
+
+### Kinesis Data Analytics which is being supplanted/replaced by Managed service for Apache Flink - just a way to query stream data
+
+- K-D-A for SQL app. (still left to be replaced): ![alt text](image-136.png)
+- K-D-A + Lambda: ![alt text](image-137.png)
+
+- K-D-A always used Flink(just a framework for processing data streams) under the hood. - but now supports Python or Scala. - Flink is a framework for processing data streams. - and is serverless.
+![alt text](image-138.png)
+
+- Random Cut Forest: It is a SQL function offered by K-D-A for anonmaly detection on any numeric columns in a stream.
+
+- Costs: ![alt text](image-139.png)
+
+### Amazon MSK (Managed Streaming for Apache Kafka)
+
+- Alternative to Kinesis. - Fully managed Kafka on AWS. - Allow you to create, update, delete clusters. - MSK creates & manages Kafka broker nodes & Zookeeper nodes for you. - Auto. recovery from kafka failures. - Data is stored on EBS volumes. - Default msg size of 1 MB. but there is possib. of sending large messages (upto 10 MB)
+
+- Architecture: ![alt text](image-140.png)
+
+- Configurations: ![alt text](image-141.png)
+
+- Security:
+![alt text](image-142.png)
+Kafka ACLs are not managed from IAM but within Kafka cluster.
+
+- MSK - monitoring: ![alt text](image-143.png)
+
+- **MSK Connect**: Managed Kafka connect (service used to connect Kafka to somewhere else and vice-versa) workers on AWS. - Auto scaling capabilities for workers. - pricing based on per-worker-per-hour
+![alt text](image-144.png)
+
+- **MSK Serverless**: ![alt text](image-145.png)
+
+- **Kinesis Data Streams v/s MSK**: (Most of the times, choose K-D-S over MSK) ![alt text](image-146.png)
+
+### Amazon Opensearch
+
+- It was initially created as search engine, but currently it is also widely used for analysis and reporting (Petabyte-scale). - It is based on Lucene (Open source software).
+
+- **Dashboards**: It is a visualization tool inside Opensearch for querying and analyzing and visualizing data stored in opensearch.
+![alt text](image-147.png)
+
+- Opensearch applications: - Full-text search - Log analytics - Application Monitoring - Security Analysis - Clickstream Analytics
+
+- Opensearch concepts: ![alt text](image-148.png)
+
+- **Index**: An index is split into shards. And each shard lives onto a node. - While storing, documents are hashed to particular shard.
+![alt text](image-149.png) 
+
+- There also exists redundancy in here.
+
+- Different modes of opensearch:
+    1. Fully managed (not serverless - thats diff.) ![alt text](image-150.png)
+
+- Opensearch options: - Dedicated master node. - Domains (== Clusters). - Snapshots to S3. - Zone awareness.
+
+- Security: ![alt text](image-151.png)
+
+- Securing Dashboards with using Cognito bcz congnito is a web based service that is inside opensearch and needs to be visible even if opensearch is in VPC.
+
+- Opensearch Anti-patterns: ![alt text](image-152.png)
+
+- Storage types in Opensearch: ![alt text](image-153.png)
+
+- Index State Management: Automates index management policies. for eg. you might have an index that are broken up for months and you just want data for just few years...
+![alt text](image-154.png) ![alt text](image-155.png)
+
+- Cross cluster replication: ![alt text](image-156.png)
+
+- Opensearch Storage and Stability: ![alt text](image-157.png)
