@@ -1222,3 +1222,67 @@ Kafka ACLs are not managed from IAM but within Kafka cluster.
 - Cross cluster replication: ![alt text](image-156.png)
 
 - Opensearch Storage and Stability: ![alt text](image-157.png)
+
+- Opensearch Performance: Memory pressure in JVM can result if: - you have unbalanced shard allocation across nodes. - you have too many shards in a cluster. To solve it, use fewer shards (if you have JVMMemoryPressure) by deleting old or unused indices.
+
+- **Opensearch Serverless**: - On-demand autoscaling. - works against 'collections' instead of provisioned domain, and they are of types 'search' or 'time series' collections. - Always encrypted with KMS key. - Capacity here is measured in terms of OCUs ![alt text](image-158.png)
+
+### Amazon Quicksight
+
+- Business analytics and visualization tool in the cloud. - is fast, easy and fully serverless. ![alt text](image-159.png)
+
+- Data Sources: ![alt text](image-160.png)
+
+- SPICE (Super fast Parallel In-memory Calculation Engine): - uses columnar storage, in-memory, machine code generation. -accelerates interactive queries on large datasets. - each user gets 10 GB of spice. - it can accelerate queries that would time out in direct query mode (i.e Athena) but still it has a limit of 30 mins., if it takes more time than that, SPICE will time out.
+
+- Use cases: - Interactive ad-hoc exploration/visualization of data. - Dashboards and KPIs. - Analyze/visualize data from: -logs in s3, on-prem. db, RDS, Athena, Redshift, any SaaS app. like Salesforce or any JDBC/ODBC data source
+
+- Quicksight Anti-patterns: - ETL, use glue instead
+
+- Security: ![alt text](image-161.png) ![alt text](image-162.png)
+
+- Quicksight + Redshift Security: ![alt text](image-163.png) If you have enterprise edition of Quicksight there is a way to use Quicksight from cross region to data source (RDS/Redshift). ![alt text](image-164.png) OR ![alt text](image-165.png). For cross-account access: ![alt text](image-166.png)
+
+- User Management: ![alt text](image-167.png)
+
+- **Pricing**:
+![alt text](image-168.png)
+- With enterprise edition you get encryption at rest, micro. active directory integration 
+
+- **Dashboards**: ![alt text](image-169.png)
+
+- Quicksight ML Insights: ![alt text](image-170.png)
+
+- Quicksight Calculated Fields: - Creates new fields based on others ![alt text](image-171.png)
+
+- Level Aware Calculations (LAC): Control granularity of calculations (which may be independent and before agg. done at display level) ![alt text](image-173.png)
+
+- LAC-W (window): Aggregate over a window or partition. - values calculated over some window are added to each row. ![alt text](image-172.png)
+
+- FLOAT vs FIXED d-type: If you are using calculated fields, precision can become an isse with FIXED dtype (as FIXED deals with only 4 decimal points). - Rounding and calculations can cause accuracy/overflow issues. To solve it, use FLOAT dype which has precision of 16 significant digits.
+
+## Application Integration
+
+### Amazon SQS
+
+- It is fully managed and can have multiple consumers and multiple producers. - It can scale from 1 msg/s to 15,000 msg/s. - Default retention period of messages is 4 days and max. of 14 days. - No limit to number of msgs. in queue. - Low latency (<10 ms on publish and receive). - Horizontal scaling in terms of consumers. - can have duplicate msgs (at least once delivery, occasionally). - can have out of order msgs (best effort ordering). - Limitations of 256 KB per msg sent.
+
+- Producing Messages: Each msg would have a body, a msg attb. (optional), delay delivery (optional). - You get back a msg identitifer and MD5 hash of the body back from the SQS. ![alt text](image-174.png)
+
+- Consuming Messages: - polls SQS for messages (receive upto 10 msgs at a time). - process the msg within visibility timeout. - delete msg using msg id and receipt handle. ![alt text](image-175.png)
+
+- **SQS FIFO Queue**: - Lower throughput (upto 3000 per second with batching and only 300 without batching). - Messages are processed in order (FIFO) by consumer. - Messages are sent exactly **once**. - 5 min. interval de-duplication using 'Duplication ID'. 
+
+- SQS Extended Client: If you want to send large messages (>256KB msg size limit) then you can use this Java lib. which uses S3 as companion. ![alt text](image-176.png)
+
+- Use cases: ![alt text](image-177.png)
+
+- SQS Limits: Max. of 120,000 in-flight messages being processed by consumers. - Batch req. has a max. of 10 messages - max 256 KB. - msg content is XML, JSON, Unformatted text. - Standard queues have unlimited TPS. - FIFO queues support upto 3,000 msgs/s. - max msg size is 256KB. data retention from 1 min to 14 days. - Pricing: - Pay per API req., pay per network usage
+
+- Security: ![alt text](image-178.png)
+
+- **Kinesis v/s SQS**: ![alt text](image-179.png) ![alt text](image-180.png) ![alt text](image-181.png)
+
+- **Dead Letter Queues**: If you have a msg that can't be successfully processed by consumer then after 'MaximumReceives' threshold, you can move that msg into DLQ. ![alt text](image-182.png)
+
+    - Redrive to Source: Feature to help consume messages in DLQ to understand what is wrong with them. - When our code is fixed, we can redrive the msgs from DLQ back into source queue (or any queue) in batches without writing custom code. ![alt text](image-183.png)
