@@ -1286,3 +1286,361 @@ Kafka ACLs are not managed from IAM but within Kafka cluster.
 - **Dead Letter Queues**: If you have a msg that can't be successfully processed by consumer then after 'MaximumReceives' threshold, you can move that msg into DLQ. ![alt text](image-182.png)
 
     - Redrive to Source: Feature to help consume messages in DLQ to understand what is wrong with them. - When our code is fixed, we can redrive the msgs from DLQ back into source queue (or any queue) in batches without writing custom code. ![alt text](image-183.png)
+
+### Amazon SNS
+
+- What if you want to send msg to more than one app. at the same time. Then you can use SNS which uses Pub/Sub model. - Producer send msg only to SNS topic. ![alt text](image-184.png) ![alt text](image-185.png)
+
+- To publish in SNS, you need to use Topic Publish (using SDK) where you can create a topic, create subscriptions, publish to the topic and subscibers will automatically get all of the msg OR you can also use Direct Publish (for mobile app SDK) where you create a plat. app, plat. endpoint and publish to that endpoint.
+
+- SNS Security: ![alt text](image-186.png)
+
+- **SNS + SQS Fan out**: ![alt text](image-187.png) 
+    - As each prefix in S3 can have only 1 event type, we can use 1 SNS with Fan out with multiple queues and other services also can be used. ![alt text](image-188.png)
+
+- SNS + Amazon S3 through Kinesis Data Firehose: ![alt text](image-189.png)
+
+- SNS FIFO Topic (Only can use SQS): ![alt text](image-190.png)
+
+- You can also use Fan out with SQS FIFO.
+- You can also message filtering to filter and send only filtered messages. ![alt text](image-191.png)
+
+### AWS Step Functions
+
+- Used to design workflows with advanced error handling and retry mechanisms outside of the code. - Easy visualization. - Audit of history of workflows. - Ability to wait for an arb. amount of time and also has a max. exec. time of a state machine with upto 1 year.
+- Examples are: Using step function for creating a model building, creating a batch processing workflow ![alt text](image-192.png)
+
+- Your workflow is called a 'state machine'. Each step in workflow is a 'state'. ![alt text](image-193.png)
+
+### Amazon AppFlow: Fully managed service that enables you to securely transfer data bet.n SAAS app. and AWS ![alt text](image-194.png)
+
+### Amazon Eventbridge (formerly CloudWatch Events)
+
+- With it, you can schedule CRON jobs (scheduled scripts), you can create event patterns (which are event rules to react to a service doing something), trigger lambda functions, send SQS/SNS messages. 
+- Event Rules: ![alt text](image-195.png)
+- You can have diff. types of event buses for diff. services. ![alt text](image-196.png)
+
+- Schema Registry: Eventbridge can analyze events and infer the schema. It also allows you to generate code for your app, so that app can know in advance how data is struct. in event bus. - Schema can also be versioned.
+
+- Resouce based policy: - Manage permissions for a specific Event Bus. ![alt text](image-197.png)
+
+### Amazon MWAA (Managed Workflow for Apache Airflow)
+
+- Apache airflow is a batch-oriented workflow tool. - It can develop, schedule and manage your workflows and also control how data flows and also your data pipeline. - Workflows are created using python code and DAGs are created in this code. - Uses Queues for holding the tasks.
+- Amazon MWAA provides a managed service for Apache airflow so you dont have to deal with installing and maintaining it.
+- Use cases: - Complex Workflows, ETL coordination, Preparing ML data
+![alt text](image-198.png)
+
+- Your DAGs(python code) gets uploaded to S3. - Then MWAA picks it up and orchestrates and schedules the pipeline defined by each DAG. - Runs within VPC. - Private or public endpoints are needed. - Auto scaling (Airflow workers autoscale upto the limits you define)
+![alt text](image-199.png)
+- Architecture: ![alt text](image-200.png)
+
+### Engineering Pipelines
+
+- Real-time Layer: ![alt text](image-201.png) Picture contains two options at start (D-S or Firehose), those are just examples.
+
+- Video Layer: ![alt text](image-202.png)
+
+- Batch Layer: ![alt text](image-203.png)
+
+- Analytics Layer: ![alt text](image-204.png)
+
+## Security, Identity and Compliance 
+
+### Principle of Least Privilege
+
+- Grant only the permissions required to perform task. - Start with broader permissions while developing and then lock it down once you have a better idea of exact services and operations req. by workload. - There is also a tool named IAM Access Analyzer that generates least prvilege policies based on your access activity. ![alt text](image-205.png)
+
+### Data Masking and Anonymization - Dealing with PII or other sensitive data. 
+
+- Masking obscufates (makes it unclear) data. ![redshift query for the same](image-206.png)
+
+- Anonymization: Techniques: - Replace with random, Shuffle, Encrypt (deterministic or probab.), Hashing
+
+OR just delete PII or don't even import in the first place
+
+### Key Salting - Append or Prepend a random value ('salt') to data before hasing it.
+
+- It prevents pre-computed 'rainbow table' attack where adversaries use pre-generated hashes of commonly used pass. to find matches. - Also ensures that same piece of data does not produce same hash across diff. instances due to unique salt. - Make sure to use strong, cryptographically secure random valus as salt. - also rotate salts periodically. - Each user should have a unique salt.
+
+![Both have same passwords](image-207.png)
+
+### Keeping data where it belongs - Some regions might have stricter policies and you can't store certain data there
+
+![alt text](image-208.png) ![alt text](image-209.png)
+
+
+### IAM: Users (Indiviudal people), Groups (Users can be aggre. to groups) & Policies (Actual permissions that are assigned to users/groups.) & also Roles (Assigned to services to access another service on our behalf)
+
+- Whenever user is in multiple groups then they would have applicable policies from both of the groups through group inheritance.
+- Policies Structure:
+![alt text](image-210.png)
+
+- IAM also has a Password Policy which allows you to create a policy in which you define what every users pass. should contain. - To further improve security, IAM also has MFA. MFA can be implemented by two ways: 1. Virtual MFA, or 2. Hardware devices containing security key.
+
+### Encryption 101
+
+- **Encryption in-flight** using **TLS/SSL**: - data is encrypted before sending and after receiving. - TLS certifications help with encryption (HTTPS). - Encryption in flight ensures no MITM (man in the middle) can happen.
+
+- **Server-side** encryption at rest: - Data is encrypted after being received by server. and data is decrypted before being sent. - stored in encrypted form.
+
+- **Client-side** encryption: - Data is encrypted at client side and then sent to server. Also decryption happens at client side.
+
+### AWS KMS (Key Management Service)
+
+- Anytime you hear encryption for AWS service, most likely it will be KMS. - In KMS, AWS manages encryption keys for us. - Fully integrated with IAM for authorization. - Easy way to control access. - you can audit KMS key usage using CloudTrail. - Integrates with AWS services seamlessly. - Never ever store your secrets in plain-text, especially in your code. - you can have KMS key encryption available through API calls.
+
+- **Key Types**: 1. Symmetric 2. Asymmetric (Public key is used while sending and private key will be used on receiver side) ![alt text](image-211.png)
+
+- **Types of KMS Keys & Auto. Key Rotations**: ![alt text](image-212.png)
+
+- Example of copying snapshots across regions: ![alt text](image-213.png)
+
+- Steps for copying snapshots across accounts: 1. Create a snapshot, encrypted with your own KMS Key (Customer managed). 2. Attach a KMS policy to authorize cross account access. 3. share encrypted ss and 4. then (on receiver side) create a copy, encrypt (doubtful) it with CMK
+
+- **KMS Key Policies**: ![alt text](image-214.png)
+
+### Amazon Macie
+
+- It is fully managed data security and data privacy service that uses ML and pattern matching to discover and protect your sensitive data in AWS. - It helps identify and alert you to sensitive data such as PII. ![alt text](image-215.png)
+
+
+### AWS Secrets Manager
+
+- Newer service, meant for storing secrets (like mostly for username and password, but other var. can also be stored for custome use case). - Capability to force rotation of secrets every X days. - Auto. gen. of secrets on rotation. - Integration with AWS services like RDS (Mostly meant for this service only), etc. - Secrets can be encrypted using KMS.
+ - Multi-region secrets: ![alt text](image-216.png)
+
+ ### AWS WAF (Web App. Firewall)
+
+ - Protects your web app. from common web exploits (Layer 7 - that is HTTP and Layer 4 is with TCP/UDP). - Can be deployed on App. Load Balancer (cant be deployed on n/w load balancer), API Gateway, CloudFront, AppSync GraphQL API, Cognito user pool
+
+ - Define Web ACL rules: like creating IP set (upto 10,000 IP add. in one) ![alt text](image-217.png)
+
+
+### AWS Shield - protect from DDoS attacks
+
+- DDoS = Distrib. Denial of Service - which means many req. at the same time.
+
+- Two tiers: 1. Shied Standard (Free and act. for every user), 2. Shield Advanced ![alt text](image-218.png)
+
+### Services' Security
+
+#### Kinesis
+
+    - **Kinesis Data Streams**:  
+        - **Encryption in flight**: via **HTTPS (SSL endpoints)**.  
+        - **Encryption at rest**: using **KMS (server-side)**.  
+        - **Client-side encryption**: must be implemented manually using custom libraries and the **Kinesis Producer Library (KPL)**.  
+        - **VPC Endpoint**/**PrivateLink**.  
+        - **Access note**: Using **KCL** requires **read/write access to DynamoDB** for checkpointing.
+
+    - **Kinesis Data Firehose**:  
+        - **Server-side encryption**: with **KMS**.  
+        - **IAM roles**: required for delivering data to **S3, Redshift, Elasticsearch, or Splunk**.  
+        - **VPC Endpoint**: supported for private access.
+
+    - **Kinesis Data Analytics**:  
+        - **IAM roles**: allow reading from streams and writing to destinations like **Kinesis Streams** or **Firehose**.  
+        - **Secure integration** with input/output sources through IAM permissions.
+
+#### SQS
+
+    - **Encryption in flight**: via **HTTPS**.  
+    - **Server-side encryption**: via **KMS**.  
+    - **IAM policy**: required to use the service.  
+    - **Queue access policies**: similar to **S3 bucket policies**, for additional control.  
+    - **Client-side encryption**: must be done manually.  
+    - **VPC Endpoint**: supported for private access.
+
+#### **AWS IoT**:  
+    - **Thing security**:  
+        - Uses **X.509 certificates** or **Cognito identities**.  
+        - Controlled through **IoT policies** (JSON format).  
+        - Policies can apply to **groups** or **individual things**.  
+        - Devices can be **revoked at any time**.  
+    - **User access**:  
+        - Managed with **IAM policies** (users, groups, roles).  
+        - Controls API-level access.  
+    - **Rules Engine**:  
+        - Requires IAM **roles attached to rules** to perform actions (e.g., send data to Kinesis).
+
+
+#### **S3 (Simple Storage Service)**:  
+    - **Access control**:  
+        - **IAM policies**, **bucket policies**, **ACLs**.  
+    - **Encryption in flight**: via **HTTPS**.  
+    - **Encryption at rest**:  
+        - Server-side: **SSE-S3**, **SSE-KMS**, **SSE-C**.  
+        - Client-side: via **S3 encryption client**.  
+    - **Additional security**:  
+        - **Versioning**, **MFA Delete**, **CORS**, **VPC Gateway Endpoint**.  
+        - **Glacier Vault Lock** (WORM policy) for compliance and immutability.
+
+#### D-DB
+
+    - **Encryption in transit**: via **TLS/HTTPS**.  
+    - **Encryption at rest**:  
+        - **KMS** encryption for base tables and indexes.  
+        - Three key options:  
+            1. **AWS-owned key** (free)  
+            2. **AWS-managed key** (`aws/dynamodb`, incurs charges)  
+            3. **Customer-managed key** (user-defined, incurs charges)  
+    - **Access control**: via **IAM policies** for API, DAX, and tables.  
+    - **DynamoDB Streams**: encrypted same as the table.  
+    - **VPC Endpoint**: supported via **gateway endpoint**.
+
+#### **RDS (Relational Database Service)**:  
+    - **Network isolation**: Deployed within a **VPC**.  
+    - **Access control**: via **Security Groups** (specific ports, IPs, CIDR blocks).  
+    - **Encryption at rest**: via **KMS**.  
+    - **Encryption in flight**: via **SSL** (JDBC connection).  
+    - **IAM policies**: control access to **RDS API**, not internal database users.  
+    - **IAM Authentication**: supported for **PostgreSQL, MySQL, MariaDB** (not full access control).  
+    - **User permissions**: managed **within the DB**, not through IAM.  
+    - **TDE (Transparent Data Encryption)**: Supported by **SQL Server** and **Oracle** on top of KMS.
+
+#### **Aurora**:  
+    - Similar security model to **RDS**.  
+    - **VPC**, **Security Groups**, **KMS**, and **SSL** supported.  
+    - **IAM Authentication**: for **MySQL and PostgreSQL only**.  
+    - **No support** for Oracle or SQL Server.
+
+#### **Lambda**:  
+    - **IAM Role**: each function requires an IAM role to define what resources it can access.  
+    - **Data access**: IAM role controls access to **sources and targets** (e.g., S3, DynamoDB).  
+    - **Secrets encryption**: via **KMS** for environment variables.  
+    - **SSM Parameter Store**: can be used for encrypted configuration values.  
+    - **VPC integration**: deploy Lambda within a **VPC** to access private resources (e.g., RDS).  
+    - **CloudWatch Logs**: access controlled via IAM roles.
+
+#### **Glue**:  
+    - **IAM policies**: control access to Glue jobs and services.  
+    - **SSL enforcement**: for JDBC database connections (**encryption in flight**).  
+    - **Data Catalog**:  
+        - Encrypted using **KMS** (encryption at rest).  
+        - **Resource policies** can be used (similar to S3 bucket policies).  
+    - **Connection password encryption**: with **KMS**.  
+    - **Data written by Glue**: can use **SSE-S3** or **SSE-KMS**.  
+    - **CloudWatch Logs encryption**: supported.  
+    - **Job bookmarks**: can be encrypted for enhanced security.    
+
+
+#### EMR
+
+    - **Access & Roles**:
+    - SSH access via **EC2 key pair**.
+    - IAM roles attached to **EC2 instances**:
+        - Needed for **S3 (EMRFS)** and **DynamoDB** access.
+
+    - **Security Groups**:
+    - Separate for **Master node** and **Core/Task nodes**.
+    - Required for **node-to-node** communication (e.g., Spark, MapReduce).
+
+    - **Authentication**:
+    - **Kerberos**: integrates with **Active Directory**.
+    
+    - **Authorization**:
+    - **Apache Ranger** (open source Role Based Access Control): must be set up on an **external EC2 instance** and connected to EMR.
+
+EMR Encryption
+
+    - **At-Rest: EMRFS (S3 Data)**:
+    - Options: **SSE-S3**, **SSE-KMS**, **Client-side encryption**.
+    - **SSE-C (SSEC)** is **not supported** by EMRFS.
+
+    - **At-Rest: Local Disks**:
+    - **HDFS encryption** (open source).
+    - **Instance Store (NVMe)**:
+        - Use **NVMe** or **LUKS encryption**.
+    - **EBS Volumes**:
+        - Use **EBS encryption via KMS** (supports root volume).
+        - **LUKS** cannot encrypt root volume.
+
+    - **In-Transit Encryption**:
+    - **Node-to-node**: via **SSL**.
+    - **EMRFS (S3)**: end-to-end encryption via **TLS**.
+
+![alt text](image-219.png)
+
+#### Opensearch
+
+    - **Network Isolation**: through **VPC**.
+    - **Access Control**:
+    - Use **OpenSearch policies** (e.g., IP restrictions).
+    - **Encryption**:
+    - **At-rest**: via **KMS**.
+    - **In-transit**: via **TLS/HTTPS endpoints**.
+    - **Authentication**:
+    - IAM or **Amazon Cognito** (e.g., **SAML** with AD).
+
+#### Redshift
+
+    - **Network Isolation**: via **VPC**.
+    - **Security Groups**: to restrict cluster access.
+
+    - **Encryption**:
+    - **In-transit**: via **JDBC with SSL**.
+    - **At-rest**:
+        - Use **KMS** or **Custom HSM** (Hardware Security Module).
+        - Supports **SSE-S3** as well.
+
+    - **IAM Roles**:
+    - Attach IAM roles to Redshift for **S3 integration**.
+    - Used with **COPY** and **UNLOAD** commands.
+    - Alternatively, embed **access/secret keys** in SQL.
+
+#### Athena
+
+    - **Access Control**:
+    - Managed by **IAM policies**.
+
+    - **Underlying Data**:
+    - Stored in **S3** → inherits **S3 security**:
+        - **IAM policies**, **bucket policies**, and **ACLs**.
+
+    - **Encryption**:
+    - At-rest: **SSE-S3**, **SSE-KMS**, **Client-side encryption**.
+    - In-transit: via **TLS** between Athena and S3.
+    - **JDBC driver** supports **SSL**.
+
+    - **Fine-Grained Access**:
+    - Managed via **AWS Glue Catalog security**.
+
+#### Quicksight
+
+    - **Authentication**:
+    - **Standard edition**: IAM or email login.
+    - **Enterprise edition**: **Active Directory / SAML-based federation**.
+    - Supports **MFA (Multi-Factor Authentication)**.
+
+    - **Encryption**:
+    - **At-rest**: for data and **SPICE engine**.
+
+    - **Granular Data Access**:
+    - **Row-Level Security (RLS)**.
+    - **Column-Level Security (CLS)**.
+
+## Networking and Content Delivery
+
+### VPC & Subnets Primer
+
+- VPC: Private network to deploy your resources (regional resource)
+
+- Subnets: Allows you to partition your network inside your VPC (AZ level resource). - To define access to internet and b/w subnets, we use Route Tables
+
+    - Public Subnet: Can access Internet and vice-versa. 
+    - Private Subnet: Not accessible by Internet.
+
+- When you create an AWS account, automatically a VPC is created in each region and only public subnet is created for you to access it.
+
+- **Internet Gateway** - routes/allows public subnet access to internet & **NAT Gateway(AWS-managed)/NAT Instances(self-managed) [are placed in public subnet]** - allows private subnet access to internet but not vice-versa. ![alt text](image-220.png)
+
+### Network ACLs & Security Groups
+
+- N/w ACL (First mechanism of defense): A firewall which controls traffic from and to subnet. - Can have ALLOW and DENY rules. - Are attached at subnet level. - Rules only include IP Add.
+
+- Security Group (2nd one): A firewall that controls traffic to and from an ENI/EC2 Instance. - Can have allow rules only. - Rules include IP add. and other security groups\
+
+![alt text](image-221.png)
+
+- VPC Flow Logs: Capture info. about IP traffic going into your interfaces: VPC, Subnet, ENI ![alt text](image-222.png)
