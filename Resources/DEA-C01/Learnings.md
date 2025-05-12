@@ -16,7 +16,7 @@
 ### APP INTEGRATION
     Amazon EventBridge
     AWS Step Functions
-    Amazon AppFlow
+    Amazon AppFlow [SaaS App.]
     Amazon Simple Notification Service (Amazon SNS)
     Amazon Simple Queue Service (Amazon SQS)
     Amazon Managed Workflows for Apache Airflow
@@ -72,8 +72,8 @@
     AWS Application Discovery Service
     AWS Application Migration Service
     AWS Database Migration Service (AWS DMS)
-    AWS DataSync
-    AWS Transfer Family
+    AWS DataSync [Move files to and fro AWS]
+    AWS Transfer Family [Over file transfer protocols]
     AWS Snow Family
 
 ### NETWORKING AND CONTENT DELIVERY
@@ -1644,3 +1644,215 @@ EMR Encryption
 ![alt text](image-221.png)
 
 - VPC Flow Logs: Capture info. about IP traffic going into your interfaces: VPC, Subnet, ENI ![alt text](image-222.png)
+
+- **VPC Peering**: Connect 2 vpc privately using AWS' n/w. - Make them behave as if they were one. They must not have overlapping CIDR (IP ranges). - vpc peering is not transitive(must be established for each vpc)
+
+- **VPC Endpoints (Only for S3 and D-DB) & VPC Endpoint Interface**: Endpoints allow you to connect to AWS services using a private n/w instead of public. - gives you enhanced security and lower latency to access AWS services. 
+    - VPC Endpoint Gateway: Only for S3 & D-DB.
+    - VPC Endpoint Interface: most services (including S3 & D-DB)
+    - All only to be used within VPC.
+
+- **Site-to-site VPN (Through internet) - Connect on-premise vpn to aws & Direct Connect (Private line) - establish a physical connection b/w on-premises and aws**: ![alt text](image-223.png)
+
+- VPC Cheat Sheet: ![alt text](image-224.png)
+
+- AWS PrivateLink (from VPC Endpoint Services family): Most secure & scalable way to expose a service to 1000's of VPC (From a marketplace provider pov) ![alt text](image-225.png)
+
+### Amazon Route 53
+
+- **DNS (Domain Name System)**: translates human friendly hostnames (urls) to machine IP addresses. - Uses hierarchical naming structure (like .com incorporates all of the .com websites and which be further divided by www or api.google.com or so) and is the backbone of the internet.
+    - DNS Terminologies: Domain Registrar, DNS Records, Zone file, Name server, Top Level Domain, Second Level Domain... ![alt text](image-226.png) 
+    - Working of DNS: ![alt text](image-227.png)
+
+- **Route 53** is a highly available, scalable, fully managed and authoritative(meaning you can update DNS records) DNS. - It is also a domain registrar (meaning you can register your own domains there). ![alt text](image-228.png)
+
+- Records: How you want to route traffic for a domain. ![alt text](image-229.png)
+    - Record Types: A (maps hostname to IPv4), AAAA (maps hostname to IPv6), CNAME (maps hostname to another hostname) - target is a domain name that must have an A or AAAA record, can't create CNAME for top node of a DNS namespace (zone apex), for eg., you can't create example.com but you can create for www.example.com, NS (Name servers for a hosted zone, controls how traffic is routed for a domain) - Ip add. of servers that can help you get IP add. of dest
+
+- Hosted Zones: A container for records that define how to route traffic to a domain and its subdomains ![alt text](image-230.png) ![alt text](image-231.png)
+
+### AWS CloudFront (CDN)
+
+- It is content-delivery network which caches content of your websites at edge locations to improve read performace. - Around 216 points of presence (edge locations). - DDoS protection (bcz world-wide integrations with aws shield and aws web app firewall)
+
+- Sources of origin of caching data: ![alt text](image-232.png)
+
+- Working from a high level:![alt text](image-233.png)
+
+- **CloudFront v/s S3 CRR**: ![alt text](image-234.png)
+
+- You can also use CloudFront to make your private S3 files accessible to public by creating an Origin Access Control (OAC) and adding OAC to S3 bucket policy.
+
+- You can use Cloudfront with ALB or EC2 as origin as well using **VPC Origins** - this allows you to deliver content from your app hosted in your VPC private subnets (no need of exposing them to internet). ![alt text](image-235.png) OR prior to vpc origins, you could only connect your public ec2 instances to cloudfront. ![alt text](image-236.png)
+
+- Cache Invalidation: If you updated your files of your back-end, but cloudfront would only refresh its cache after TTL has expired. - However you can force an entire or partial cache refresh by performing Cache invalidation (invalidating all of your cached file or files at a part. path)
+
+## Management and Governance
+
+### Amazon CloudWatch 
+
+- **CloudWatch Metrics**: - Cloudwatch provides metrics for every services in AWS. - Metric is just a variable to monitor (CPUUtilization, NetworkIn...). - Metrics belong to namespaces (and each service has one namespace). - Dimension is an attribute of a metric (intance id, env., etc.) [for eg. Cpu utiilization metric can be related to specific instance id or so..]. You can have upto 30 dimensions per metric. - Metrics have a timestamp. - Once you have a lot of metrics, you can create a cloudwatch dashboard of metrics. - You can also create 'custom metrics' (for eg., metric for RAM).
+
+- **Metric Streams**: Continually stream cloudwatch metrics to a destination of *your choice*, with a near-real time delivery and low latency. ![alt text](image-237.png)
+
+- **Cloudwatch Logs**: Perfect place to store application logs. To start with it, you must define:
+    1. Log groups: arbitrary name, usually represents application.
+    2. Log stream: Within log group, you would have multiple log streams and they represent log instance within app/log files/containers.
+    3. Log expiration policies: can define how long can log stay. (never expire, 1 day to 10 yrs.)
+    - You can **send cloudwatch logs (export)** to: S3 (Batch export might take upto 12 hours - api call is CreateExportTask, not real time - for real time use Logs subscrip.), K-D-S, K-D-F, Lambda, Opensearch
+    - Logs are encrypted by default. - Can setup KMS-based encryption with your own keys
+    - **Sources**: ![alt text](image-238.png)
+
+
+- **Cloudwatch logs Insights**: To query cloudwatch logs. - With it, you can search and analyze cloudwatch logs![alt text](image-239.png) ![alt text](image-240.png)
+
+- **Cloudwatch logs Subscriptions**: Get real time log events from Cloudwatch logs for processing and analysis. - Send to K-D-S, K-D-F, Lambda. - You can also have filter using Subscription Filter. ![alt text](image-241.png)
+
+- **Cloudwatch logs Aggregation (Multi-region and account)**: ![alt text](image-242.png)
+    - Also you can send cloudwatch log events to resource in diff. AWS account ![alt text](image-243.png)
+
+- By default, logs from your EC2 will not go to cloudwatch. - You need to run a Cloudwatch agent on EC2 to push the log files you want. ![alt text](image-244.png)
+- Cloudwatch Logs Agent (old one) & Unified Agent (latest one): ![alt text](image-245.png)
+    - Metrics supported by Unified agent: ![alt text](image-246.png)
+
+- **Cloudwatch Alarms**: Alarms are used to trigger notifications for any metric. - Various options (sampling, %, min, max, etc.). - Alarm states: OK, Insuff. data and ALARM (when alarm notifies). - Period: Length of time in seconds to evaluate metric
+
+    - Alarm Targets: ![alt text](image-247.png)
+
+- Composite Alarms: As alarms are on a single metric, we can create a composite alarm from multiple other alarms. - you can have AND or OR conditions with it. ![alt text](image-248.png)
+
+- You can recover your EC2 instances if status checks metric is monitored. ![alt text](image-249.png)
+
+- More about alarms: ![alt text](image-250.png)
+
+### AWS CloudTrail 
+
+- Provides governance, compliance and audit for your AWS account. - It is enabled by default. - Get an history of events/API calls made within your AWS accounts by: - Console, SDK, CLI, AWS service. - Can put logs from cloudwatch logs or s3. - A trail can be applied to all regions or a single region. - If a resource is deleted in AWS, check CloudTrail first.
+
+- Events: Two types: 1. Management Events (Op.n perf. on resources in your AWS account. by default, they are logged), 2. Data Events (by default, data events are not logged) ![alt text](image-251.png)
+
+- **Cloudtrail Insights**: Enable Cloudtrail insights to detect unusual activity in your account. - It can help detect inaccurate resource provisioning, hitting service limits, bursts of aws iam actions. - It analyzes normal management event to create a baseline and then continuously analyze write events to detect unusual pattterns. Anomalies appear in cloudtrail console. Events can also be sent to s3 or eventbridge event can also be generated.
+
+- Events retention: Event are stored for 90 days in cloudtrail. To keep events beyond this period, log them to s3 and use athena
+
+- **Cloudtrail Lake**: Managed data lake for cloudtrail events. - Integrates collection, storage, preparation and optimization for analysis and query. - Events are converted to ORC format. - Enables querying cloudtrail data with sql. - To enable it, use 'Create event data store' menu choice in the console. ![alt text](image-253.png)
+    - By default, data is retained for upto 7 years. - You can specify event types to be tracked (i.e management events or data events) ![alt text](image-252.png)
+    - Querying cloudtrail lake: ![alt text](image-254.png)
+
+### AWS Config
+
+- It is a per-region service (can be aggre. across regions and accounts) which helps with auditing and recording compliance (settings/security sett.) of your AWS resources. - Helps record config. and changes over time. - It can be used to solve questions questions like: - Is there unrestricted ssh access to my security groups? Do my buckets have any public access? How has my ALB configurations changed over time?
+    - You can receive alerts (SNS notif.) for any changes - You can also store config. data into s3 and then query it using athena. - You can use over 75 AWS config rules and also make custom **config rules** (must be defined in lambda) ![alt text](image-255.png)
+    - As **config resource**, you can view compliance of a resource over time, view config. of a resource over time, view cloudtrail api calls of a res. over time.
+    - **Auto-remediations**: Although you can't deny any actions but you can remediate and make non-compliant resources compliant using SSM Automation Documents ![alt text](image-256.png)
+    - Config rules - Notification: ![alt text](image-257.png)
+
+- ***Cloudwatch v/s Cloudtrail v/s Config***: ![alt text](image-258.png) 
+    - Exemplary actions for an ELB: ![alt text](image-259.png)
+
+### Deploying and managing infrastruture at scale
+
+- **AWS CloudFormation**: It is a declarative way of outlining your AWS infrastruture, for any resources (most of them are supported). - Creates services in the same order and with exact same config. as specified
+
+    - Benefits: - Infrastructure as code (IaC), Cost, productivity (ability to dest. and recreate app on the fly, auto. gene. of diagram of project), you can use already existing templates from internet as well (Dont re-invent wheel) And it supports almost all resources (also you can create custom resources if you want.) ![alt text](image-260.png) 
+    - CloudForm. + Infrastructure Composer (to visualize diagrams and create stacks as well by drag and drop): ![alt text](image-261.png)
+    - When using cloudformation, it is not advised to update anything manually, always do anything through cloudformation service only.
+
+### Amazon SSM (Simple Systems Manager) Parameter Store
+
+- It is a secure storage for configuration and secrets.- Optional seamless encryption using KMS. - Serverless, scalable, durable, easy SDK. - Version tracking of config./secrets. - security is provided through IAM. - notif. using Eventbridge. - Full integration with CloudFormation (meaning you can leveage to use parameters from parameter store as input param. for stack) ![alt text](image-262.png)
+ - By creating hierarchies, you can easily manage and control accesses across your org. ![alt text](image-263.png) You can have access to secrets of secret manager using secret_id_in_Secret..
+ - You have two tiers of parameter tiers (Standard and Advanced): ![alt text](image-264.png). You can also have parameter policies (only in advanced tier though) to add a TTL to a parameter to force updating or deleting sensitive data such as pass. 
+
+### AWS Well Architected Framework
+
+- It is a tool as well as a framework to create good app. on AWS
+
+- General Principles: 
+1. Stop guessing your capacity needs - Instead use auto-scaling groups and so on...
+2. Test systems at production scale - With AWS, you can perform big test on big infra. and then instantly shut it down which makes it easy to do so..
+3. Automate to make architectural exp. easier (like using cloudformation temp. to easily deploy app. in multiple env. for experimentation)
+4. Allow for evolutionary architecture (Design based on changing req.)
+5. Drive architectures using data
+6. Improve through game days (try your app. in good prod. and see how you can improve OR simulate application by putting a lot of pressure on architecture)
+
+- Principles: They need to be considered as synergy meaning if you improve one of them, there are many chances that some other will also improve.
+1. Sustainability
+2. Security
+3. Reliability
+4. Operational Excellence
+5. Performance efficiency
+6. Cost optimization
+
+- **Well Architected Tool**: Free tool to review your archi. against 6 pillars. - You select your workload and answer questions and you will get answers to be reviewed against 6 pillars (results can be seen in dashboard.)
+
+### Amazon Managed Grafana
+
+- Grafana is a popular open-source platform used to monitor, visualize and alert on **metrics and logs**.
+- AMG is integrated with IAM identity center and SAML for user management and permissions. - Compatible with grafana plugins and alerts. - It is fully managed, scales auto. - Data is encryp. at rest and in-transit (can also use kms key of your own)
+- Data sources: ![alt text](image-265.png)
+
+## Sagemaker/ML
+
+- **Sagemaker**: Fully managed service for dev./data scientists to build ML models. ![alt text](image-266.png)
+
+### Sagemaker Feature Store
+
+- A feature is just a property used to train ML model. - ML models req. fast and secure access to feature data for training. - It's also a challenge to keep it organized and share features across diff. models.
+- Sources: ![alt text](image-267.png)
+- In feature store, we have feature groups and each feature group contains record identifier, feature name and event time. - Data ingestion can be streaming (Online store is used) or Batch (S3 store). ![alt text](image-268.png)
+
+### Sagemaker ML Lineage Tracking
+
+- Creates & stores ML workflow (MLOps). - Keep a running history of models. - Tracking for auditing and compliance. - Auto. or manually-created entities. - Integrated with AWS Resource Access Manager for cross-account lineage. ![alt text](image-269.png)
+- Entities in lineage tracking: ![alt text](image-270.png). To query lineage, use LineageQuery API from Python
+
+### Sagemaker Data Wrangler
+
+- It is a visual interface (in Sagemaker Studio) to prepare data for ML. - Import data. - Visualize data. - Transform data (300+ transform. to choose from) [Think of it as a code generation tool]
+![alt text](image-271.png)
+- Sources: ![alt text](image-272.png)
+- After visualizing, transforming and also sometimes training a quick model, you can export whole data flow. ![alt text](image-273.png)
+- Data wrangler troubleshooting: ![alt text](image-274.png)
+
+## Developer Tools
+
+- **Access Keys** (managed by user, access_key ~= username & secret_access_key~=password), **CLI** (A tool that enables you to interact with AWS services using command in your command shell & with it you get direct access to public APIs of AWS services), **SDK** (Language specific set of APIs (set of libraries) which enables you to manage AWS services programmatically) [CLI is built on top of AWS SDK for python (boto3)]
+
+### AWS CDK
+
+- Allows you to define cloud infrastruture using a familiar lang. - CDK is used to convert our known langauge code to YAML file which can then be used to directly deploy our code to cloud ![alt text](image-275.png)  
+
+### AWS CodeDeploy
+
+- We want to deploy our app. automatically (independent of Cloudformation stack) ![alt text](image-276.png)
+    - CodeDeploy can deploy application content that runs on a server and is stored in Amazon S3 buckets, GitHub repositories, or Bitbucket repositories. CodeDeploy can also deploy a serverless Lambda function. You do not need to make changes to your existing code before you can use CodeDeploy.
+
+### AWS CodeCommit
+
+- It is discontinued now (and aws suggests to use external git alternatives like Github) ![alt text](image-277.png)
+
+### AWS CodeDeploy
+
+- It is code building service in the cloud which compiles source code, run tests and produces packages that are ready to be deployed (by CodeDeploy) ![alt text](image-278.png)
+
+### AWS CodePipeline
+
+- Orchestrate diff. steps to have the code auto. be pushed to production. - Basis for CI/CD ![alt text](image-279.png)
+
+### AWS Cost Explorer
+
+- (Only billing service that AWS might ask) Used to visualize, understand and manage your AWS costs and usage over time. ![alt text](image-280.png)
+
+### Amazon API Gateway
+
+- API G/w + Lambda = No infra. to manage. - We can have continuosly streaming data as we have support for WebSocket protocol. - Handle API versioning. - Handle diff. env. - Trans. and validate req. and responses. ![alt text](image-281.png)
+
+- API gateway Integrations: ![alt text](image-282.png)
+
+- API endpoint types: 
+    1. Edge optimized (default): For global clients
+    2. Regional: For clients within the same region
+    3. Private: Can only be accessed from your VPC using VPC endpoint interface (ENI) ![alt text](image-283.png)
+
+- Security: ![alt text](image-284.png)
