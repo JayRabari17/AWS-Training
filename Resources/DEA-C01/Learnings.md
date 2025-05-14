@@ -245,7 +245,7 @@ Task 3:
 
 ## Storage 
 
-### Amazon S3 
+### Amazon S3
 
 - Building block of AWS, advertised as 'infinitely scaling' storage, many websites use s3 as their backbone, many aws services use s3 as an integration. S3 does not have hierarchy like File sytems. 
 - Use cases: Backup, storage, Disaster recov. purpose, Archive, Hybrid cloud storage, app. hosting, media hosting, data lakes and analytics, soft. delivery, hosting static sites
@@ -290,6 +290,7 @@ Task 3:
     - You can move b/w below classes manually or using S3 Lifecycle Config to move it autom.
     - S3 Durability (how frequent loss of object might happen) and Availability (how readily a service is available)
 ![alt text](image-7.png)
+![alt text](image-287.png)
 
 - **Storage Class Comaprison**
 ![Storage Class Comaprison](image-9.png)
@@ -336,6 +337,8 @@ Task 3:
     - DSSE-KMS (Dual Layer SSE)
 
     - Default Encryption in S3 is now SSE-S3. You can also have checks on if any data is going encrypted or not by "Force Encryption" using Bucket Policy.
+
+**[Customer managed key has more customization and also has more granular access control than aws managed key (AMK)]**
 ![alt text](image-19.png) 
 
 - **S3 Access Points (When you have multiple app. having diff. sets of accesses needed)**
@@ -376,6 +379,7 @@ Task 3:
 ![alt text](image-26.png)
     - EFS Performace Classes:
 ![alt text](image-27.png)
+In bursting throughput mode, throughput increases as total size of data increases.
     - EFS Storage Classes:
 ![alt text](image-28.png)
 
@@ -408,7 +412,7 @@ Task 3:
         1. Partition Key (Hash): Here, Part. key must be unique and diverse so that data is well distributed. Eg. User_id
         2. Partition Key + Sort Key (Hash + Range): Combination must be unique. Data is grouped by Part. key. Eg. User_id - Part. key and Game_id - Sort key for users-games table.
     
-    - Read/Write Capacity modes: => Switching can be done once every 24 hrs only.
+    - **Read/Write Capacity modes**: => Switching can be done once every 24 hrs only.
         1. Provisioned mode - 
 ![alt text](image-36.png)
 
@@ -457,9 +461,9 @@ Task 3:
 
 - **Global Secondary Indexes (GSI) [Separate from base table]:** It has alternative primary key from base table. - It speeds up query on non-key attb. - Index key consists of scalar type attb. - Same attb. projection as LSI - You must provision separate RCUs and WCUs for the index - Can be added or modified later on as well unlike LSI. -> If writes are throttled on GSI, then main table will also be throttled.    
 
-- **DynamoDB Accelerator (DAX):** Fully managed, highly available, seamless in-memory cache for DynamoDB. - Doesn't req. any app. logic modif. - Solves Hot key prob. (too many reads). - 5 mins TTL for cache by default. - Multi-AZ is preferable. - Secure.
+- **DynamoDB Accelerator (DAX):** Fully managed, highly available, seamless in-memory cache for DynamoDB. - Doesn't req. any app. logic modif. - Solves Hot key prob. (too many reads). - 5 mins TTL for cache by default. - Multi-AZ is preferable. - Secure. **[When throughput occurs, DAX can throttle req. AND also DAX does not automatically retry requests.]**
 
-- DAX (Should be used for caching objects or individual query or scan caches.) v/s Elasticache (Used to store some computed/aggregation results to be reused.)
+- DAX (Should be used for caching objects or individual query or scan caches.) **v/s** Elasticache (Used to store some computed/aggregation results to be reused.)
 
 - **D-DB Streams:** List of all modifications done on the table (Create/Update/Delete). - They can be sent to - Kinesis, Lambda, Kinesis Client lib. - Data retention upto 24 hrs. - Made up of shards just like Kinesis Data Streams
     - You have the ability to choose what would be written to the stream like Keys_Only, New_image, Old_image, New_and_old_image of the item.
@@ -603,7 +607,7 @@ Task 3:
 
     - Snapshot Copy to Another Region:  
         - For KMS-encrypted clusters:  
-            - Create a **KMS key** in the destination region.  
+            - Create a **KMS key** in the destination region [or use customer encyrption key through KMS only as you can not use kms key from another region ]
             - Create a **snapshot copy grant** using that key.  
             - In the source region, **enable snapshot copy** using the created grant.  
             - Enables secure, cross-region snapshot replication.
@@ -637,7 +641,7 @@ Task 3:
 
     - **Classic Resize**:  - Used when you need to **change node types** or make more complex size changes. - Cluster becomes **read-only** during the resize (can take **hours or days**). - Necessary when elastic resize limitations are not sufficient.  
 
-    - **Snapshot–Restore–Resize Strategy**: Helps **minimize downtime** during a classic resize.   - Ensures original cluster remains available while new one is provisioned.
+    - **Snapshot–Restore–Resize Strategy**: Helps **minimize downtime** during a classic resize. - Ensures original cluster remains available while new one is provisioned.
         - Steps:  
             1. **Take a snapshot** of the original cluster.  
             2. **Restore** that snapshot into a new cluster.  
@@ -646,7 +650,7 @@ Task 3:
 
 - **RA3 Nodes, Cross-region Data sharing, Reshift ML:**
 
-    - **RA3 Node Types** (2019/2020):  - Decouples **compute and storage**—scale each independently. - Uses **managed storage** to optimize costs and performance. - Required for **Cross-Region Data Sharing**.
+    - **RA3 Node Types** (2019/2020):  - Decouples **compute and storage**—scale each independently. - Uses **managed storage** to optimize costs and performance. - Required for **Cross-Region Data Sharing**. [Also has ability to automatically offload infrequently accessed (cold) data to S3]
 
     - **Redshift Data Lake Export** (2020): Export query results to **Amazon S3** in **Apache Parquet** format. - Parquet is **twice as fast** to unload, **6× smaller**, and **partitioned automatically**.  - Data is compatible with **Athena**, **Redshift Spectrum**, **EMR**, **SageMaker**, etc.
 
@@ -694,6 +698,8 @@ Task 3:
     - Some More points are:
     ![alt text](image-46.png)
 
+**[Dynamic data masking policies hide, obfuscate, or pseudonymize data that matches a given format ; Amazon Redshift supports column-level access control for data in Redshift via column-level GRANT and REVOKE statements]**
+
 ## Migration and Transfer
 
 ### Application Discovery Service & Application Migration Service
@@ -732,7 +738,7 @@ Task 3:
 
 - If it takes more than 1 week to transfer data, use Snow devices.
 ![alt text](image-55.png)
-
+![alt text](image-286.png)
 - AWS Snowball:
 ![alt text](image-54.png)
 
@@ -889,6 +895,8 @@ Lambda with Opensearch for logs from S3 (**Opensearch is search engine and also 
         - Self Managed Nodes: Nodes created by you and handled by EKS. - Supports on-demand or spot instances.
 
         - AWS Fargate
+
+        [- EKS Karpenter: Automatically provisioning and deprovisioning of nodes based on the specific scheduling needs of pods, allowing efficient scaling and cost optimization.]
         
 - EKS Volumes:
 ![alt text](image-74.png)
@@ -1012,6 +1020,7 @@ using multiple engines like hive, pig, etc. - EMR would be better for it
 
 - Athena for Spark (kinda like On top of): ![alt text](image-98.png)
 
+**[Partitioning [should be used when data is having low cardinality] means Partitioning means organizing data into directories (or "prefixes") and Bucketing [should be used when data is having high cardinality and we need to store data as evenly as possible.] which means records that have the same value for a property go into the same bucket.]**
 - **Athena Federated Queries**: 
 ![alt text](image-99.png)
 ![alt text](image-101.png)
@@ -1032,6 +1041,7 @@ using multiple engines like hive, pig, etc. - EMR would be better for it
 
     - Spark + Redshift: ![alt text](image-97.png)
 
+**[Partition pruning allows Athena to skip irrelevant partitions during query execution]**
 ### Amazon EMR
 
 - It is a managed Hadoop framework on EC2 instances. - Includes Spark, Hbase, Presto, Flink, Hive and more. - EMR notebooks can be used to run your scripts on your clusters. - Several integration points
@@ -1115,6 +1125,8 @@ Kinesis Agent is a linux program that is used to send logs from instance to kine
         - **Enhanced Fan Out**: Works with KCL 2.0 and AWS Lambda from and After Nov. 2018. Here instead of all consumers having aggregate of 2 MB/s per shard, each consumer can have 2 MB/s provisioned throughput per shard means that 2 MB/s per shard per consumer because it pushes data to consumer over HTTP/2. Reduce latency to ~70 ms
 
         - **Standard/Classic Consumers v/s Enhanced Fan out**: ![alt text](image-121.png)
+
+**[A high IteratorAge could mean that the data is not being processed in a timely manner. One way to increase throughput when you use Kinesis Data Streams and Lambda is to increase the parallelization factor. This solution can cause multiple Lambda function invocations to concurrently process one shard. Therefore, this solution could increase performance.]**
     
 - **Scaling K-D-S**: 
 
@@ -1146,6 +1158,7 @@ Kinesis Agent is a linux program that is used to send logs from instance to kine
 ![alt text](image-129.png)
 
 - Firehose buffer accumulates records and is flushed based on time and size rules. Firehose will auto. increase buffer size to increase throughput.
+- BUT When Kinesis Data Firehose's delivery stream scales, it can cause an effect on the buffering LIKE The overall buffer size (SizeInMBs) of the delivery stream scales proportionally but inversely. For example, if the capacity of Kinesis Data Firehose increases by two times the original buffer size limit, the buffer size is halved.
 
 - **Data Streams v/s Firehose**: ![alt text](image-130.png)
 
@@ -1235,7 +1248,7 @@ Kafka ACLs are not managed from IAM but within Kafka cluster.
 
 - SPICE (Super fast Parallel In-memory Calculation Engine): - uses columnar storage, in-memory, machine code generation. -accelerates interactive queries on large datasets. - each user gets 10 GB of spice. - it can accelerate queries that would time out in direct query mode (i.e Athena) but still it has a limit of 30 mins., if it takes more time than that, SPICE will time out.
 
-- Use cases: - Interactive ad-hoc exploration/visualization of data. - Dashboards and KPIs. - Analyze/visualize data from: -logs in s3, on-prem. db, RDS, Athena, Redshift, any SaaS app. like Salesforce or any JDBC/ODBC data source
+- Use cases: - Interactive ad-hoc exploration/visualization of data. - Dashboards and KPIs. - **Analyze/visualize data from: -logs in s3, on-prem. db, RDS, Athena, Redshift, any SaaS app. like Salesforce or any JDBC/ODBC data source**
 
 - Quicksight Anti-patterns: - ETL, use glue instead
 
@@ -1247,7 +1260,7 @@ Kafka ACLs are not managed from IAM but within Kafka cluster.
 
 - **Pricing**:
 ![alt text](image-168.png)
-- With enterprise edition you get encryption at rest, micro. active directory integration 
+- With enterprise edition you get encryption at rest, microsoft active directory integration and SSO using SAML
 
 - **Dashboards**: ![alt text](image-169.png)
 
@@ -1386,7 +1399,7 @@ OR just delete PII or don't even import in the first place
 
 - **Client-side** encryption: - Data is encrypted at client side and then sent to server. Also decryption happens at client side.
 
-### AWS KMS (Key Management Service)
+### AWS KMS (Key Management Service) [Are region-specific BUT can use key from one acc. to another]
 
 - Anytime you hear encryption for AWS service, most likely it will be KMS. - In KMS, AWS manages encryption keys for us. - Fully integrated with IAM for authorization. - Easy way to control access. - you can audit KMS key usage using CloudTrail. - Integrates with AWS services seamlessly. - Never ever store your secrets in plain-text, especially in your code. - you can have KMS key encryption available through API calls.
 
@@ -1415,6 +1428,8 @@ OR just delete PII or don't even import in the first place
  - Protects your web app. from common web exploits (Layer 7 - that is HTTP and Layer 4 is with TCP/UDP). - Can be deployed on App. Load Balancer (cant be deployed on n/w load balancer), API Gateway, CloudFront, AppSync GraphQL API, Cognito user pool
 
  - Define Web ACL rules: like creating IP set (upto 10,000 IP add. in one) ![alt text](image-217.png)
+
+ **[Can be deployed with Cloudfront, application load balancer, API Gateway]**
 
 
 ### AWS Shield - protect from DDoS attacks
@@ -1637,7 +1652,7 @@ EMR Encryption
 
 ### Network ACLs & Security Groups
 
-- N/w ACL (First mechanism of defense): A firewall which controls traffic from and to subnet. - Can have ALLOW and DENY rules. - Are attached at subnet level. - Rules only include IP Add.
+- N/w ACL (First mechanism of defense) [Only used within subnets]: A firewall which controls traffic from and to subnet. - Can have ALLOW and DENY rules. - Are attached at subnet level. - Rules only include IP Add.
 
 - Security Group (2nd one): A firewall that controls traffic to and from an ENI/EC2 Instance. - Can have allow rules only. - Rules include IP add. and other security groups\
 
@@ -1705,6 +1720,10 @@ EMR Encryption
 
 
 - **Cloudwatch logs Insights**: To query cloudwatch logs. - With it, you can search and analyze cloudwatch logs![alt text](image-239.png) ![alt text](image-240.png)
+
+- **Cloudwatch Contributor Insights**: Analyze log data and create time series reports. - Display contributor data. ![alt text](image-285.png)
+
+- **Cloudwatch log insights v/s contributor insights**: Contributor Insights identifies the top contributors to specific metrics (finding top contributors for patterns), while Log Insights provides interactive searching and analysis of log data (query and explore log data, find specific events and perf. aggregation)
 
 - **Cloudwatch logs Subscriptions**: Get real time log events from Cloudwatch logs for processing and analysis. - Send to K-D-S, K-D-F, Lambda. - You can also have filter using Subscription Filter. ![alt text](image-241.png)
 
@@ -1791,6 +1810,8 @@ EMR Encryption
 - Grafana is a popular open-source platform used to monitor, visualize and alert on **metrics and logs**.
 - AMG is integrated with IAM identity center and SAML for user management and permissions. - Compatible with grafana plugins and alerts. - It is fully managed, scales auto. - Data is encryp. at rest and in-transit (can also use kms key of your own)
 - Data sources: ![alt text](image-265.png)
+
+### Amazon DataZone - Cloud based management service that helps org. catalog, discover, share and govern data across various sources (AWS, on-premises systems, and third-party sources) [centralized platform for data cataloging, access control, and data governance]
 
 ## Sagemaker/ML
 
