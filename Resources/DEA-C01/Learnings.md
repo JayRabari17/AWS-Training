@@ -292,6 +292,8 @@ Task 3:
 ![alt text](image-7.png)
 ![alt text](image-287.png)
 
+**[You cannot move data to standard ia and one zone ia before 30 days but can move to other classes within 1 day as well]**
+
 - **Storage Class Comaprison**
 ![Storage Class Comaprison](image-9.png)
     1. S3 Standard - Gen. Purp.  (No Retrival charges)
@@ -1158,7 +1160,7 @@ Kinesis Agent is a linux program that is used to send logs from instance to kine
 ![alt text](image-129.png)
 
 - Firehose buffer accumulates records and is flushed based on time and size rules. Firehose will auto. increase buffer size to increase throughput.
-- BUT When Kinesis Data Firehose's delivery stream scales, it can cause an effect on the buffering LIKE The overall buffer size (SizeInMBs) of the delivery stream scales proportionally but inversely. For example, if the capacity of Kinesis Data Firehose increases by two times the original buffer size limit, the buffer size is halved.
+**[- BUT When Kinesis Data Firehose's delivery stream scales, it can cause an effect on the buffering LIKE The overall buffer size (SizeInMBs) of the delivery stream scales proportionally but inversely. For example, if the capacity of Kinesis Data Firehose increases by two times the original buffer size limit, the buffer size is halved.]**
 
 - **Data Streams v/s Firehose**: ![alt text](image-130.png)
 
@@ -1327,7 +1329,7 @@ Kafka ACLs are not managed from IAM but within Kafka cluster.
 
 ### Amazon AppFlow: Fully managed service that enables you to securely transfer data bet.n SAAS app. and AWS ![alt text](image-194.png)
 
-### Amazon Eventbridge (formerly CloudWatch Events)
+### Amazon Eventbridge (formerly CloudWatch Events) [can also integrate 3rd party SaaS apps and custom]
 
 - With it, you can schedule CRON jobs (scheduled scripts), you can create event patterns (which are event rules to react to a service doing something), trigger lambda functions, send SQS/SNS messages. 
 - Event Rules: ![alt text](image-195.png)
