@@ -169,6 +169,7 @@
     2. JSON (used when web exchanges are done, config. and settings for soft. app., use cases need flexible schema)
     3. Avro: Binary format that stores both the data and its schema, ig making processing platform independent (i.e diff. sys can do it without needing ori. sys. context.) [should be used when working in big data and real time processing sys., when schema evolution is needed, efficient serialization for data transport between sys] - Apache sys. (be it any from kafka, hadoop, spark, flink, etc.) can use it easily.
     4. Parquet: Columnar storage optimized for analytics. Allows for efficient compression and encoding schemas [should be used when analyzing large data with analy. engines, when need to read specific columns instead of rows, storing data on distrib. sys where I/O op. and storage needs optimization] - Hadoop eco., Spark, Hive, Apache impala, Redshift spectrum can use parquet.
+    5. ORC V/S Parquet: ![alt text](image-288.png)
 
 - **Data Modeling**
 
@@ -340,7 +341,7 @@ Task 3:
 
     - Default Encryption in S3 is now SSE-S3. You can also have checks on if any data is going encrypted or not by "Force Encryption" using Bucket Policy.
 
-**[Customer managed key has more customization and also has more granular access control than aws managed key (AMK)]**
+**[Customer managed key has more customization and also has more granular access control than aws managed key (AMK) ; - S3 Glacier vault is used to enforce regulatory and compliance controls on data access (you can specify controls such as “write once read many” (WORM) in a vault lock policy and lock the policy from future edits)]**
 ![alt text](image-19.png) 
 
 - **S3 Access Points (When you have multiple app. having diff. sets of accesses needed)**
@@ -365,6 +366,10 @@ Task 3:
         8. Detailed Status code metrics:
 
         You have 2 types of metrics in storage lens, 1. Free and 2. Paid. 
+
+- **S3 Select**: There also exists s3 select to directly query only a subset of data from an object, using simple SQL expressions. It works on an object stored in CSV, JSON, or Apache Parquet format. It also works with an object that is compressed with GZIP or BZIP2 (for CSV and JSON objects only), and a server-side encrypted object. You can specify the format of the results as either CSV or JSON, and you can determine how the records in the result are delimited.
+
+- **S3 Glacier Select**: It works on glacier storage class and does not work on parquet format.
     
 ### Amazon EBS (on EC2 instances)
 
@@ -494,6 +499,8 @@ In bursting throughput mode, throughput increases as total size of data increase
         - **Row level**: using `LeadingKeys` (limit access by primary key).  
         - **Attribute level**: limit visibility of specific attributes in items.
 
+**[AWS Application Auto Scaling is used to adjust provisioned capacity according to usage patterns]**
+
 ### RDS
 
 - It is a hosted relational db. - It can be any of the follow.: - Aurora, MySQL, PGSQL, MariaDB, Oracle, SQL Server. - Offer full ACID compliance
@@ -511,6 +518,8 @@ In bursting throughput mode, throughput increases as total size of data increase
         2. Exclusive Locks: Prevents all reads and writes to resouces. Only one transac. can hold an exclus. lock. (Syn.: FOR UPDATE)
     - Example:
 ![alt text](image-42.png)
+
+**[We can inovke lambda function through a stored procdure or native function]**
 
 - **RDS Ops Guidelines:** Best practices to ensure performance and resilience of Amazon RDS. - Use **CloudWatch** to monitor memory, CPU, storage, and replica lag.  - Schedule **automated backups** during times of low write IOPS.  - If I/O is insufficient, **recovery after failure will be slow** – consider migrating to higher I/O instance types.- Use **General Purpose or Provisioned IOPS** storage for better performance.  
     - Set **DNS TTL to 30 seconds or less** in your applications.  - Always **test failover scenarios** before they're needed in production. - Provision **enough RAM** to hold your entire working data set.  
@@ -624,6 +633,8 @@ In bursting throughput mode, throughput increases as total size of data increase
 
 - There also exists ***Automatic Workload Management*** which can create upto 8 queues (Default 5 queues with even memory allocation). - Large queries (i.e big hash joins) -> Concurrency lowered and Small queries (i.e inserts, scans, aggre.) -> Concurrency raised. - Conifguring query queues can be done by setting up priority queue or set concurrency scaling mode, user groups, etc.
 
+**[Auto. WLM does not by itself provide the additional compute resources for scaling read and write capacity on-demand like concurrency scaling does.]**
+
 - There is another type of WLM, and it is ***Manual Workload Management:*** One default queue with concurren. level of 5 (i.e 5 queries at once) and also superuser queue (with concurr. level 1). you can defined upto 8 queues with conc. level of upto 50. You can also define query hopping.
 
 - **Short Query Acceleration (SQA):** Prioritize short-running queries over long-running ones. - Short queries run in a dedicated space, wont wait in queues behind long queries. - This can be used in place of WLM queues for short queries. - Works with: Create Table as (CTAS), Read only queries. - Uses ML to predict a query's exec. time. - Can configure how many second is 'short'
@@ -715,7 +726,7 @@ In bursting throughput mode, throughput increases as total size of data increase
 
 ### Database Migration Service (DMS)
 
-- Quickly and securely migrate dbs to aws. It is resilient and self-healing. - Source db can remain available while this happens. - It supports Homogeneous and Heterogeneous replications. - It also provides continuous data replication using CDC. - To use DMS, you must create EC2 instance to perform the replication tasks.
+- Quickly and securely migrate dbs to aws. It is resilient and self-healing. - Source db can remain available while this happens. - It supports Homogeneous and Heterogeneous replications. - It also provides continuous data replication using CDC. - To use DMS, you must create EC2 instance to perform the replication tasks. **[- AWS DMS does not migrate empty tables.]**
     - Sources & Targets:
     ![alt text](image-49.png)
 
@@ -877,7 +888,7 @@ Lambda with Opensearch for logs from S3 (**Opensearch is search engine and also 
     - EC2 Instance Profile (valid only if you are using EC2 Launch Type):
     ![alt text](image-70.png)
 
-- Amazon ECS - Load Balancer Integrations: ALB is supported and works for most use cases. But sometimes, you might need N/W Load balancer.
+- Amazon ECS - Load Balancer Integrations: **ALB (works on layer 7 and cannot perform routing traffic, etc.)**  is supported and works for most use cases. But sometimes, you might need N/W Load balancer.
 
 - Amazon ECS - Data Volumes [Persistant data - EFS & also you can't mount S3 as file system for ECS tasks.]
 ![alt text](image-71.png)
@@ -1022,7 +1033,7 @@ using multiple engines like hive, pig, etc. - EMR would be better for it
 
 - Athena for Spark (kinda like On top of): ![alt text](image-98.png)
 
-**[Partitioning [should be used when data is having low cardinality] means Partitioning means organizing data into directories (or "prefixes") and Bucketing [should be used when data is having high cardinality and we need to store data as evenly as possible.] which means records that have the same value for a property go into the same bucket.]**
+**[Partitioning [should be used when data is having low cardinality] means Partitioning means organizing data into directories (or "prefixes") and Bucketing [should be used when data is having high cardinality and we need to store data as evenly as possible.] which means records that have the same value for a property go into the same bucket. ; => The UNLOAD statement is useful when you want to output the results of a SELECT query in a non-CSV format (Parquet, ORC, Avro, and JSON) but do not require the associated table. ; -> Athena allows you to set two types of cost controls: per-query limit and per-workgroup limit. For each workgroup, you can set only one per-query limit and multiple per-workgroup limits.]**
 - **Athena Federated Queries**: 
 ![alt text](image-99.png)
 ![alt text](image-101.png)
@@ -1280,7 +1291,7 @@ Kafka ACLs are not managed from IAM but within Kafka cluster.
 
 ### Amazon SQS
 
-- It is fully managed and can have multiple consumers and multiple producers. - It can scale from 1 msg/s to 15,000 msg/s. - Default retention period of messages is 4 days and max. of 14 days. - No limit to number of msgs. in queue. - Low latency (<10 ms on publish and receive). - Horizontal scaling in terms of consumers. - can have duplicate msgs (at least once delivery, occasionally). - can have out of order msgs (best effort ordering). - Limitations of 256 KB per msg sent.
+- It is fully managed and can have multiple consumers and multiple producers. - It can scale from 1 msg/s to 15,000 msg/s. - Default retention period of messages is 4 days and max. of 14 days. - No limit to number of msgs. in queue. - Low latency (<10 ms on publish and receive). - Horizontal scaling in terms of consumers. - can have duplicate msgs (at least once delivery, occasionally). - can have out of order msgs (best effort ordering). - Limitations of 256 KB per msg sent. [Max Visibility timeout of 12 hours while default is 30 seconds. - Also has replayability]
 
 - Producing Messages: Each msg would have a body, a msg attb. (optional), delay delivery (optional). - You get back a msg identitifer and MD5 hash of the body back from the SQS. ![alt text](image-174.png)
 
@@ -1487,7 +1498,7 @@ OR just delete PII or don't even import in the first place
         - **IAM policies**, **bucket policies**, **ACLs**.  
     - **Encryption in flight**: via **HTTPS**.  
     - **Encryption at rest**:  
-        - Server-side: **SSE-S3**, **SSE-KMS**, **SSE-C**.  
+        - Server-side: **SSE-S3 (With it, each object is encrypted with a unique key)**, **SSE-KMS**, **SSE-C**.  
         - Client-side: via **S3 encryption client**.  
     - **Additional security**:  
         - **Versioning**, **MFA Delete**, **CORS**, **VPC Gateway Endpoint**.  
@@ -1759,6 +1770,7 @@ EMR Encryption
 - **Cloudtrail Lake**: Managed data lake for cloudtrail events. - Integrates collection, storage, preparation and optimization for analysis and query. - Events are converted to ORC format. - Enables querying cloudtrail data with sql. - To enable it, use 'Create event data store' menu choice in the console. ![alt text](image-253.png)
     - By default, data is retained for upto 7 years. - You can specify event types to be tracked (i.e management events or data events) ![alt text](image-252.png)
     - Querying cloudtrail lake: ![alt text](image-254.png)
+**[AWS CloudTrail Lake is designed specifically for the aggregation, management, and analysis of audit logs across multiple AWS accounts and services. It provides a centralized solution that enables enterprises to consolidate their AWS CloudTrail logs in one place.]**
 
 ### AWS Config
 
