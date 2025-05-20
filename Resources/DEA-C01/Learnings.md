@@ -308,7 +308,8 @@ Task 3:
 - **S3 Storage Price Comparison**
 ![S3 Storage Price Comparison](image-10.png)
 
-- **S3 Lifecycle Rules:** It has transition actions to configure objects to transition to another storage class. And also it has expiration actions which configures object to expire(delete) after defined time. It also can be used to delete old versions of life if versioning enabled. Can also be used to delete incomplete Multi-part uploads 
+- **S3 Lifecycle Rules:** It has **transition actions** to configure objects to transition to another storage class. And also it has **expiration actions** which configures object to expire(delete) after defined time. It also can be used to delete old versions of life if versioning enabled. Can also be used to delete incomplete Multi-part uploads
+**[Deletions are preferred over transition]** 
 
 - **S3 Analytics:** - Storage Class Analysis: Helps you decide when to transition objects to right storage class. Recommendations for only standard and std. IA (not for one zone or glacier)
     - Report is updated daily. - 24 to 48 hrs to start seeing data analysis
@@ -373,8 +374,8 @@ Task 3:
     
 ### Amazon EBS (on EC2 instances)
 
-- EBS Volume is a network drive (not physical drive) which you can attach to your instances while they run. This allows us to have persistent data even after instances terminate. Some EBS volume types can be mounted to multiple instances.
-- They are bound to a specific AZ.
+- EBS Volume is a network **drive** (not physical drive) which you can attach to your instances while they run. This allows us to have persistent data even after instances terminate. Some EBS volume types can be mounted to multiple instances.
+- They are **bound to a specific AZ.**
 ![alt text](image-24.png)
 - There is an delete on termination attb. attached to the EBS in EC2's console settings, which if turned on will delete ebs on termination of ec2 instance.
     EBS Elastic Volumes: Changing the EBS volumes and pereformance (IOPS) types as well without detaching or restarting your instance.
@@ -1033,7 +1034,7 @@ using multiple engines like hive, pig, etc. - EMR would be better for it
 
 - Athena for Spark (kinda like On top of): ![alt text](image-98.png)
 
-**[Partitioning [should be used when data is having low cardinality] means Partitioning means organizing data into directories (or "prefixes") and Bucketing [should be used when data is having high cardinality and we need to store data as evenly as possible.] which means records that have the same value for a property go into the same bucket. ; => The UNLOAD statement is useful when you want to output the results of a SELECT query in a non-CSV format (Parquet, ORC, Avro, and JSON) but do not require the associated table. ; -> Athena allows you to set two types of cost controls: per-query limit and per-workgroup limit. For each workgroup, you can set only one per-query limit and multiple per-workgroup limits.]**
+**[Partitioning [should be used when data is having low cardinality] means Partitioning means organizing data into directories (or "prefixes") and Bucketing [should be used when data is having high cardinality and we need to store data as evenly as possible.] which means records that have the same value for a property go into the same bucket. ; => The UNLOAD statement is useful when you want to output the results of a SELECT query in a non-CSV format (Parquet, ORC, Avro, and JSON) but do not require the associated table. ; -> Athena allows you to set two types of cost controls: per-query limit and per-workgroup limit. For each workgroup, you can set only one per-query limit and multiple per-workgroup limits. ; Athena can only query Std. and std. ia classes]**
 - **Athena Federated Queries**: 
 ![alt text](image-99.png)
 ![alt text](image-101.png)
