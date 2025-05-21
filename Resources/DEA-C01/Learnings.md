@@ -368,7 +368,7 @@ Task 3:
 
         You have 2 types of metrics in storage lens, 1. Free and 2. Paid. 
 
-- **S3 Select**: There also exists s3 select to directly query only a subset of data from an object, using simple SQL expressions. It works on an object stored in CSV, JSON, or Apache Parquet format. It also works with an object that is compressed with GZIP or BZIP2 (for CSV and JSON objects only), and a server-side encrypted object. You can specify the format of the results as either CSV or JSON, and you can determine how the records in the result are delimited.
+- **S3 Select**: There also exists s3 select to directly query only a subset of data from an object, using simple SQL expressions. It works on an object stored in CSV, JSON, or Apache Parquet format. It also works with an object that is compressed with **GZIP or BZIP2 (for CSV and JSON objects only)**, and a server-side encrypted object. You can specify the format of the results as either CSV or JSON, and you can determine how the records in the result are delimited.
 
 - **S3 Glacier Select**: It works on glacier storage class and does not work on parquet format.
     
@@ -1165,7 +1165,7 @@ Kinesis Agent is a linux program that is used to send logs from instance to kine
 
 ### Amazon Data Firehose (previously known Kinesis Data Firehose) [Near real time service]
 
-- It is used to store data into target destinations. - It is fully managed with no adminis. req.. - It is  near real time (buffer based on time and size, optionally can be disabled) - Load data into redshift/s3/opensearch/splunk. - Auto. scaling, - supports many data formats. - data conversion from JSON to parquet/orc (only for S3). - Data transformation through AWS lambda. - Supports compression only when target is S3. - Pay for the amount of data passed through. - Spark and KCL can't read from KDF.
+- It is used to store data into target destinations. - It is fully managed with no adminis. req.. - It is  near real time (buffer based on time and size, optionally can be disabled) - Load data into redshift/s3/opensearch/splunk. - Auto. scaling, - supports many data formats. - data conversion from JSON to parquet/orc (only for S3) [But for csv to json, you must use lambda]. - Data transformation through AWS lambda. - Supports compression only when target is S3. - Pay for the amount of data passed through. - Spark and KCL can't read from KDF.
 ![alt text](image-128.png)
 
 - Data firehose delivery diagram:
@@ -1353,7 +1353,7 @@ Kafka ACLs are not managed from IAM but within Kafka cluster.
 
 ### Amazon MWAA (Managed Workflow for Apache Airflow)
 
-- Apache airflow is a batch-oriented workflow tool. - It can develop, schedule and manage your workflows and also control how data flows and also your data pipeline. - Workflows are created using python code and DAGs are created in this code. - Uses Queues for holding the tasks.
+- Apache airflow is a batch-oriented workflow tool. - It can develop, schedule and manage your workflows and also control how data flows and also your data pipeline. - Workflows are created using python code and DAGs are created in this code. - Uses Queues for holding the tasks. -- Has built-in retry mechanism.
 - Amazon MWAA provides a managed service for Apache airflow so you dont have to deal with installing and maintaining it.
 - Use cases: - Complex Workflows, ETL coordination, Preparing ML data
 ![alt text](image-198.png)
